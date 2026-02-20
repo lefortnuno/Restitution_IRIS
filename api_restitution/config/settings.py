@@ -121,30 +121,6 @@ DATABASES = {
 }
 
 
-# # Database pour Postgresql Local
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'iris_restitution',
-#         'USER': 'postgres',
-#         'PASSWORD': 'root',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
-# # Database pour Postgresql DOCKER
-# DATABASES = {
-#        'default': {
-#            'ENGINE': 'django.db.backends.postgresql',
-#            'NAME': os.environ.get('POSTGRES_DB'),
-#            'USER': os.environ.get('POSTGRES_USER'),
-#            'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-#            'HOST': os.environ.get('POSTGRES_HOST'),
-#            'PORT': os.environ.get('POSTGRES_PORT'),
-#        }
-#    }
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -237,18 +213,18 @@ LOGGING = {
 
 
 # Celery LOCALHOST
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
 
 
 # # Celery pour DOCKER
-# CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')
-# CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://redis:6379/0')
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://redis:6379/0')
 
 
 # Configurations supplémentaires recommandées pour Celery pour DOCKER
-# CELERY_ACCEPT_CONTENT = ['json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'UTC'
-# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
