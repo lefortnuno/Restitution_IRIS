@@ -27,12 +27,10 @@ node {
             bat 'curl -f http://localhost:5173 || exit /b 1' 
         }
 
-        retry(10) {
+        retry(3) {
             sleep 5
-            bat 'curl -f -X GET http://localhost:8000/api/users/?format=json || exit /b 1'  
+            bat 'curl http://localhost:8000/api/users/?format=json || exit /b 1'  
         }
-
-        bat 'curl http://localhost:8000/api/users/?format=json || exit /b 1'  
 
     }
     
@@ -43,13 +41,34 @@ node {
         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
 
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
-        
-        echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui/.env
-         
-        type restitution_ui/.env 
-
-        del token.json
+ 
         ''' 
+    }
+
+    stage('Restt') { 
+        bat ''' 
+        for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
+ 
+        curl -f -X POST http://localhost:8000/api/restitutions/ ^
+            -H "Content-Type: application/json" ^
+            -H "Authorization: Bearer %ACCESS_TOKEN%" ^
+            -d "{
+                    \\"nom\\": \\"restt1\\",
+                    \\"formats_selected\\": [],
+                    \\"jointures\\": [],
+                    \\"affichages\\": [
+                        {
+                            \\"nom_affichage\\": \\"Tableau simple\\"
+                        }
+                    ],
+                    \\"filtres_pop\\": [],
+                    \\"conditions\\": [],
+                    \\"operation_selected\\": [],
+                    \\"champs\\": []
+                }"
+ 
+        del token.json
+        '''
     }
 
     // stage('Frontend Build') {
