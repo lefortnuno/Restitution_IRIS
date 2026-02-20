@@ -28,7 +28,11 @@ node {
             bat 'curl -f http://localhost:5173 || exit /b 1' 
         }
 
-        
+        retry(10) {
+            sleep 5
+            bat 'curl -f http://localhost:8000/admin/login/ || exit /b 1'
+        }
+
         bat 'curl -f -X GET http://localhost:8000/api/users || exit /b 1'  
 
         bat 'docker exec restt-backendd-1 printenv GROQ_API_KEY'
@@ -44,7 +48,10 @@ node {
 
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
         echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui/.env
-        type restitution_ui/.env
+        
+        cd restitution_ui
+        type .env
+        cd ..
 
         del token.json
             ''' 
