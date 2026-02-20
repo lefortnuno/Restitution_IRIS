@@ -210,12 +210,7 @@ LOGGING = {
         },
     },
 }
-
-
-# Celery LOCALHOST
-# CELERY_BROKER_URL = 'redis://localhost:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
-
+ 
 
 # # Celery pour DOCKER
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')
