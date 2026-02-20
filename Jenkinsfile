@@ -43,9 +43,8 @@ node {
         type token.json
 
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
-        echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui\\.env
- 
-        type restitution_ui\.env
+        echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui/.env
+        type restitution_ui/.env
 
         del token.json
             ''' 
