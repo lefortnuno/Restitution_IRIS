@@ -46,6 +46,9 @@ node {
          
         type restitution_ui\\.env 
         ''' 
+
+        bat "set REACT_APP_API_TOKEN=%ACCESS_TOKEN% && docker compose up -d --build"
+        sleep 50
     }
 
     stage('Restt') { 
@@ -55,18 +58,10 @@ node {
         curl -f -X POST http://localhost:8000/api/restitutions/ ^
             -H "Content-Type: application/json" ^
             -H "Authorization: Bearer %ACCESS_TOKEN%" ^
-            -d "{\\"nom\\":\\"restt1\\",\\"formats_selected\\":[],\\"jointures\\":[],\\"affichages\\":[{\\"nom_affichage\\":\\"Tableau simple\\"}],\\"filtres_pop\\":[],\\"conditions\\":[],\\"operation_selected\\":[],\\"champs\\":[]}"
- 
-        del token.json
+            -d "{\\"nom\\":\\"resttAuto\\",\\"formats_selected\\":[],\\"jointures\\":[],\\"affichages\\":[{\\"nom_affichage\\":\\"Tableau simple\\"}],\\"filtres_pop\\":[],\\"conditions\\":[],\\"operation_selected\\":[],\\"champs\\":[]}"
+
         '''
     }
-
-    // stage('Frontend Build') {
-
-    //     dir('restitution_ui') {
-    //         bat 'npm run build'
-    //     }
-    // }
 
     stage('Done') { 
                     echo """
