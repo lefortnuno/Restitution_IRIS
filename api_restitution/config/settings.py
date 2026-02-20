@@ -108,18 +108,32 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #     }
 # }
 
-# # Database pour Postgresql
+# # Database pour Postgresql Docker && Local
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'iris_restitution',
-        'USER': 'postgres',
-        'PASSWORD': 'root',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.environ.get('POSTGRES_DB', 'iris_restitution'),
+        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'root'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
+
+# # Database pour Postgresql Local
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'iris_restitution',
+#         'USER': 'postgres',
+#         'PASSWORD': 'root',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
+# # Database pour Postgresql DOCKER
 # DATABASES = {
 #        'default': {
 #            'ENGINE': 'django.db.backends.postgresql',
