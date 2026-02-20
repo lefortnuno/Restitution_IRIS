@@ -10,12 +10,12 @@ node {
         withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY')]) {
             bat 'docker compose up -d --build'
         }     
-        sleep 35
+        sleep 40
     }
 
     stage('SuperUser') { 
         bat """
-        docker exec restt-backendd-1 python -c "import os, django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup(); from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save()"
+            docker exec restt-backendd-1 python -c "import os, django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings'); django.setup(); from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save()"
         """ 
     }
 
@@ -33,26 +33,11 @@ node {
         }
 
     }
-    
-
-    stage('Auth') { 
-        bat ''' 
-        :WAIT_LOOP
-        curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
-
-        for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
-
-        echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui/.env 
-         
-        type restitution_ui\\.env 
-        ''' 
-
-        bat "set REACT_APP_API_TOKEN=%ACCESS_TOKEN% && docker compose up -d --build"
-        sleep 50
-    }
 
     stage('Restt') { 
-        bat ''' 
+        bat '''  
+        curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
+  
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
  
         curl -f -X POST http://localhost:8000/api/restitutions/ ^
@@ -60,6 +45,7 @@ node {
             -H "Authorization: Bearer %ACCESS_TOKEN%" ^
             -d "{\\"nom\\":\\"resttAuto\\",\\"formats_selected\\":[],\\"jointures\\":[],\\"affichages\\":[{\\"nom_affichage\\":\\"Tableau simple\\"}],\\"filtres_pop\\":[],\\"conditions\\":[],\\"operation_selected\\":[],\\"champs\\":[]}"
 
+        del token.json 
         '''
     }
 
