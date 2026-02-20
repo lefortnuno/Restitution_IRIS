@@ -2,8 +2,7 @@ node {
 
     stage('Clone') {   
         checkout scm 
-        bat 'dir'
-        bat 'echo %GROQ_API_KEY%'
+        bat 'dir' 
     } 
 
     stage('Build') {  
@@ -30,12 +29,11 @@ node {
 
         retry(10) {
             sleep 5
-            bat 'curl -f http://localhost:8000/admin/login/ || exit /b 1'
+            bat 'curl -f -X GET http://localhost:8000/api/users/?format=json || exit /b 1'  
         }
 
-        bat 'curl -f -X GET http://localhost:8000/api/users || exit /b 1'  
+        bat 'curl http://localhost:8000/api/users/?format=json || exit /b 1'  
 
-        bat 'docker exec restt-backendd-1 printenv GROQ_API_KEY'
     }
     
 
@@ -44,25 +42,22 @@ node {
         :WAIT_LOOP
         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
 
-        type token.json
-
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
-        echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui/.env
         
-        cd restitution_ui
-        type .env
-        cd ..
+        echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui/.env
+         
+        type restitution_ui/.env 
 
         del token.json
-            ''' 
+        ''' 
     }
 
-    stage('Frontend Build') {
+    // stage('Frontend Build') {
 
-        dir('restitution_ui') {
-            bat 'npm run build'
-        }
-    }
+    //     dir('restitution_ui') {
+    //         bat 'npm run build'
+    //     }
+    // }
 
     stage('Done') { 
                     echo """
