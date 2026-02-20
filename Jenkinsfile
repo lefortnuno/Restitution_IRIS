@@ -50,27 +50,14 @@ node {
 
     stage('Restt') { 
         bat ''' 
-            for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
+        for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
  
-            curl -f -X POST http://localhost:8000/api/restitutions/ ^
-                -H "Content-Type: application/json" ^
-                -H "Authorization: Bearer %ACCESS_TOKEN%" ^
-                -d "{
-                    \\"nom\\": \\"restt1\\",
-                    \\"formats_selected\\": [],
-                    \\"jointures\\": [],
-                    \\"affichages\\": [
-                        {
-                            \\"nom_affichage\\": \\"Tableau simple\\"
-                        }
-                    ],
-                    \\"filtres_pop\\": [],
-                    \\"conditions\\": [],
-                    \\"operation_selected\\": [],
-                    \\"champs\\": []
-                 }"
+        curl -f -X POST http://localhost:8000/api/restitutions/ ^
+            -H "Content-Type: application/json" ^
+            -H "Authorization: Bearer %ACCESS_TOKEN%" ^
+            -d "{\\"nom\\":\\"restt1\\",\\"formats_selected\\":[],\\"jointures\\":[],\\"affichages\\":[{\\"nom_affichage\\":\\"Tableau simple\\"}],\\"filtres_pop\\":[],\\"conditions\\":[],\\"operation_selected\\":[],\\"champs\\":[]}"
  
-            del token.json
+        del token.json
         '''
     }
 
