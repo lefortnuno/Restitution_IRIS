@@ -41,18 +41,21 @@ node {
         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
 
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
- 
+
+        echo REACT_APP_API_TOKEN=%ACCESS_TOKEN% > restitution_ui/.env 
+         
+        type restitution_ui\\.env 
         ''' 
     }
 
     stage('Restt') { 
         bat ''' 
-        for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
+            for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
  
-        curl -f -X POST http://localhost:8000/api/restitutions/ ^
-            -H "Content-Type: application/json" ^
-            -H "Authorization: Bearer %ACCESS_TOKEN%" ^
-            -d "{
+            curl -f -X POST http://localhost:8000/api/restitutions/ ^
+                -H "Content-Type: application/json" ^
+                -H "Authorization: Bearer %ACCESS_TOKEN%" ^
+                -d "{
                     \\"nom\\": \\"restt1\\",
                     \\"formats_selected\\": [],
                     \\"jointures\\": [],
@@ -65,9 +68,9 @@ node {
                     \\"conditions\\": [],
                     \\"operation_selected\\": [],
                     \\"champs\\": []
-                }"
+                 }"
  
-        del token.json
+            del token.json
         '''
     }
 
