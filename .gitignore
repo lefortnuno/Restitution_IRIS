@@ -1,0 +1,8 @@
+**/node_modules
+# **/.env
+docs/*
+!docs/Document_Conception_Restitution.pdf
+**/.vscode 
+**/__pycache__  
+**/.env
+!restitution_ui/.env

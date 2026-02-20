@@ -1,0 +1,21 @@
+export type Option = {
+  value: string;
+  label: string;
+};
+
+export const affichageOptions: Option[] = [
+  { value: "table-simple", label: "Tableau simple" },
+  { value: "table-pivot", label: "Tableau croisée dynamique" },
+  { value: "chart-histo", label: "Histogramme" },
+  { value: "chart-bar", label: "Graphique en barres" },
+  { value: "chart-line", label: "Graphique linéaire" },
+  { value: "chart-pie", label: "Diagramme circulaire" },
+  { value: "maps-pie", label: "Cartographie circulaires" },
+  { value: "maps-bar", label: "Cartographie en barres" },
+];
+
+export type Props = {
+  name: string;
+  placeholder: string;
+  error?: string;
+};

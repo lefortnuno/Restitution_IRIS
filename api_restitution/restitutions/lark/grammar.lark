@@ -1,0 +1,44 @@
+# === Grammaire minimale étendue === 
+    start: statement+
+
+    ?statement: si_block
+            | sinon_si_block
+            | sinon_block
+            | expr
+
+    si_block: SI "(" condition ")" ALORS "(" expr ")"           -> si_expr
+    sinon_si_block: SINON SI "(" condition ")" ALORS "(" expr ")"   -> sinon_si_expr
+    sinon_block: SINON ALORS "(" expr ")"                        -> sinon_expr
+
+    ?condition: expr OP_COMP expr (OP_LOG expr OP_COMP expr)*   -> condition
+
+    ?expr: func_call 
+        | arith_expr
+        | field
+        | NUMBER
+        | string
+        | list 
+        | "(" expr ")"   -> parens
+
+    ?arith_expr: expr (OP_COMP expr)+       -> binary_op 
+
+    func_call: FUNC_NAME "(" field ["," group_by_clause] ")"   -> detect_func
+
+    group_by_clause: GROUP_BY "(" field ("," field)* ")"    -> detect_group_by
+
+    string : CNAME
+    field:  CNAME "." CNAME 
+    list: "[" [expr ("," expr)*] "]" 
+
+    FUNC_NAME: /(sum|avg|min|max|count|med|mod|ecart|var|qp|tc|show)/
+    OP_COMP: "+" | "-" | "*" | "/" | "%" | "<=" | ">=" | "<" | ">" | "==" | "!=" 
+    OP_LOG: /(ET|OU)/ 
+    SI: "si"
+    SINON: "sinon"
+    ALORS: "alors"
+    GROUP_BY: "group_by"
+    CNAME: /(?!(sum|avg|min|max|count|med|mod|ecart|var|qp|tc|show|ET|OU|si|sinon|alors|GROUP_BY)\b)[a-zA-Z_][a-zA-Z0-9_]*/
+ 
+    %import common.NUMBER
+    %import common.WS 
+    %ignore WS
