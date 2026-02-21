@@ -127,4 +127,4 @@ def get_state_coordinates(name: str, field: str = "name") -> dict[str, float] | 
         return None
     return None
 
-print("v=",get_country_coordinates("United States of America"))
+# print("v=",get_country_coordinates("United States of America"))

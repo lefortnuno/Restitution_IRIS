@@ -102,10 +102,6 @@ class RestitutionViewSet(viewsets.ModelViewSet):
         :return: JSON contenant les restitutions + IDs des tâches `list_formats`.
         """
         response = super().list(request, *args, **kwargs) 
- 
-        response.data = {
-            "results": response.data,
-        }
 
         return response
 

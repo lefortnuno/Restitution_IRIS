@@ -31,18 +31,16 @@ export interface RestitutionResponseType {
   count: number;
   next: string | null;
   previous: string | null;
-  results: RestitutionType[];
-  structure_check_task_id: string;
-  list_format_task_id: string;
+  results: RestitutionType[]; 
 }
 
 const fetchRestitutions = async (
   page = 1,
   search = "",
-  ordering = ""
+  ordering = "",
 ): Promise<RestitutionResponseType> => {
   const response = await axiosInstance.get<RestitutionResponseType>(
-    `/restitutions/?page=${page}&search=${search}&ordering=${ordering}`
+    `/restitutions/?page=${page}&search=${search}&ordering=${ordering}`,
   );
   return response.data;
 };

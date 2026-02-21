@@ -70,7 +70,7 @@ export default function TableBody({
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(
-                  `/visualisation/${row.original.id}?affichage=${row.original.affichages?.[0]?.nom_affichage}`
+                  `/visualisation/${row.original.id}?affichage=${row.original.affichages?.[0]?.nom_affichage}`,
                 );
               }}
               title="Visualiser"

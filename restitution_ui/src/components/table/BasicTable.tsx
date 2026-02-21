@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  getCoreRowModel, 
+  getCoreRowModel,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
