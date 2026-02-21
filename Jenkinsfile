@@ -10,7 +10,7 @@ node {
         withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY')]) {
             bat 'docker compose up -d --build'
         }     
-        // sleep 40
+        sleep 40
     }
 
     stage('SuperUser') { 
