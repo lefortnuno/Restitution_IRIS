@@ -10,7 +10,7 @@ node {
         withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY')]) {
             bat 'docker compose up -d --build'
         }     
-        sleep 40
+        // sleep 40
     }
 
     stage('SuperUser') { 
@@ -55,15 +55,21 @@ node {
 
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
 
-        powershell -Command ^
-            "$data = Get-Content restt.json | ConvertFrom-Json; ^
-            foreach ($item in $data) { ^
-                $json = $item | ConvertTo-Json -Depth 10; ^
-                curl -f -X POST http://localhost:8000/api/restitutions/ ^
-                    -H 'Content-Type: application/json' ^
-                    -H ('Authorization: Bearer ' + $env:ACCESS_TOKEN) ^
-                    -d $json; ^
-            }"
+        powershell -NoProfile -ExecutionPolicy Bypass -Command "
+            $token = $env:ACCESS_TOKEN
+            $data = Get-Content restt.json | ConvertFrom-Json
+
+            foreach ($item in $data) {
+                $json = $item | ConvertTo-Json -Depth 20
+
+                Invoke-RestMethod `
+                    -Uri 'http://localhost:8000/api/restitutions/' `
+                    -Method Post `
+                    -Headers @{ Authorization = 'Bearer ' + $token } `
+                    -ContentType 'application/json' `
+                    -Body $json
+            }
+        "
 
         del token.json
         '''
