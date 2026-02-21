@@ -73,9 +73,9 @@ node {
         bat '''
         echo === Import SQL into Postgres Docker ===
 
-        docker cp restt.sql dbb-1:/restt.sql
+        docker cp restt.sql restt-dbb-1:/restt.sql
 
-        docker exec -i dbb-1 psql -U postgres -d postgres -f /restt.sql
+        docker exec -i restt-dbb-1 psql -U postgres -d postgres -f /restt.sql
 
         echo === Postgres tables created ===
         '''
