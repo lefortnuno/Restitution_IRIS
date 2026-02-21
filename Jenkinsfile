@@ -34,21 +34,6 @@ node {
 
     }
 
-    // stage('Restt') { 
-    //     bat '''  
-    //     curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
-  
-    //     for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
- 
-    //     curl -f -X POST http://localhost:8000/api/restitutions/ ^
-    //         -H "Content-Type: application/json" ^
-    //         -H "Authorization: Bearer %ACCESS_TOKEN%" ^
-    //         -d "{\\"nom\\":\\"Moyenne Global Montant Impayé par Flag\\",\\"formats_selected\\":[],\\"jointures\\":[],\\"affichages\\":[{\\"nom_affichage\\":\\"Diagramme circulaire\\"}],\\"filtres_pop\\":[],\\"conditions\\":[],\\"operation_selected\\":[],\\"champs\\":[]}"
-
-    //     del token.json 
-    //     '''
-    // }
-
     stage('Restt') {
         bat '''
         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
@@ -75,7 +60,7 @@ node {
 
         docker cp restt.sql restt-dbb-1:/restt.sql
 
-        docker exec -i restt-dbb-1 psql -U postgres -d postgres -f /restt.sql
+        docker exec -i restt-dbb-1 psql -U postgres -d iris_restitution -f /restt.sql
 
         echo === Postgres tables created ===
         '''
