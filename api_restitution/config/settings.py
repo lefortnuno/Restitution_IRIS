@@ -213,8 +213,8 @@ LOGGING = {
  
  
 # # Celery pour DOCKER
-CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('REDIS_RES_URL', 'redis://localhost:6379/1')
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_RES_URL', 'redis://localhost:6379/1')
 
 
 # # Configurations supplémentaires recommandées pour Celery pour DOCKER

@@ -6,7 +6,7 @@ C:\Users\AC2I\Envs\iris_rest\Scripts\activate
 
 celery -A config worker -P solo -l info
 
-python manage.py runserver 0.0.0.0:8091
+python manage.py runserver 0.0.0.0:8000
 
 ## Makemigrations
 
