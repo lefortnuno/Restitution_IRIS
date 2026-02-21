@@ -49,28 +49,22 @@ node {
     //     '''
     // }
 
-    stage('Restt') { 
+    stage('Restt') {
         bat '''
         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
 
         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
 
-        powershell -NoProfile -ExecutionPolicy Bypass -Command "
-            $token = $env:ACCESS_TOKEN
-            $data = Get-Content restt.json | ConvertFrom-Json
+        echo $token = $env:ACCESS_TOKEN > send.ps1
+        echo $data = Get-Content restt.json ^| ConvertFrom-Json >> send.ps1
+        echo foreach ($item in $data) { >> send.ps1
+        echo     $json = $item ^| ConvertTo-Json -Depth 20 >> send.ps1
+        echo     Invoke-RestMethod -Uri "http://localhost:8000/api/restitutions/" -Method Post -Headers @{ Authorization = "Bearer " + $token } -ContentType "application/json" -Body $json >> send.ps1
+        echo } >> send.ps1
 
-            foreach ($item in $data) {
-                $json = $item | ConvertTo-Json -Depth 20
+        powershell -NoProfile -ExecutionPolicy Bypass -File send.ps1
 
-                Invoke-RestMethod `
-                    -Uri 'http://localhost:8000/api/restitutions/' `
-                    -Method Post `
-                    -Headers @{ Authorization = 'Bearer ' + $token } `
-                    -ContentType 'application/json' `
-                    -Body $json
-            }
-        "
-
+        del send.ps1
         del token.json
         '''
     }
