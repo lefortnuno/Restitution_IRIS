@@ -10,8 +10,7 @@ from .serializers import RestitutionsSerializer
 from .models import Restitutions
 
 from .tasks import (
-    bulk_delete_task,
-    compare_structures_id,
+    bulk_delete_task, 
     format_and_structure_table,
     list_formats,
     lancer_traitement_restitution,
@@ -100,22 +99,13 @@ class RestitutionViewSet(viewsets.ModelViewSet):
         """
         Liste les restitutions avec ajout d'IDs de tâches Celery en arrière-plan.
 
-        :return: JSON contenant les restitutions + IDs des tâches `compare_structures_id` et `list_formats`.
+        :return: JSON contenant les restitutions + IDs des tâches `list_formats`.
         """
-        response = super().list(request, *args, **kwargs)
-
-        task = compare_structures_id.delay()
-        format = list_formats.delay()
-
-        if isinstance(response.data, dict):
-            response.data['structure_check_task_id'] = task.id
-            response.data['list_format_task_id'] = format.id
-        else:
-            response.data = {
-                "results": response.data,
-                "structure_check_task_id": task.id,
-                "list_format_task_id": format.id
-            }
+        response = super().list(request, *args, **kwargs) 
+ 
+        response.data = {
+            "results": response.data,
+        }
 
         return response
 
@@ -189,7 +179,11 @@ class RestitutionViewSet(viewsets.ModelViewSet):
 
         :return: ID de la tâche Celery lancée.
         """
+        format2 = list_formats()
+        print("[--VIEWS--] format2= ",format2)
+
         format = list_formats.delay()
+        print("[--VIEWS--] Appel a format depuis celery= ", format)
 
         return Response({
             "format_check_task_id": format.id

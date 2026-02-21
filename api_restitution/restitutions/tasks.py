@@ -399,46 +399,11 @@ def bulk_delete_task(ids: list):
         "not_found_ids": not_found_ids
     }
 
-
-@app.task
-def compare_structures_id():
-    used_structure_ids = set(Formats.objects.values_list('id_structure', flat=True))
-
-    # URL de l'API et token depuis .env
-    api_url = os.getenv("DJANGO_URL_IRIS") + "get_formats/"
-    token = os.getenv("DJANGO_TOKEN_IRIS")  
-
-    if not token:
-        print("[DEBUG] Token manquant dans les variables d'environnement.")
-        return [] 
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json",
-    }
-
-    try:
-        response = requests.get(api_url,  timeout=10)
-        response.raise_for_status()
-        formats_data = response.json()
-    except requests.RequestException as e:
-        print(f"[Celery] Erreur lors de la récupération des structures via API : {e}")
-        return []
  
-    # Extraction des IDs de structures depuis les données reçues
-    existing_structure_ids = set()
-    for item in formats_data:
-        structure_id = item.get("id")
-        if structure_id is not None:
-            existing_structure_ids.add(structure_id)
-
-    missing_structures = list(used_structure_ids - existing_structure_ids)
- 
-    return missing_structures
-
-
 @app.task
 def list_formats(): 
+    
+    print("[--TASK--] F= ")
     return get_structures()
 
 
@@ -449,5 +414,6 @@ def format_and_structure_table(id):
     except (ValueError, TypeError):
         return []
     
+    print("[--TASK--] FS= ")
     return get_structures_table(id_int)
  
