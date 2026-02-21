@@ -147,5 +147,466 @@
     ],
     "nom": "Montant Couverture par type et Code de Garantie",
     "description": ""
+  },
+  {
+    "formats_selected": [{ "id_structure": 7, "name_structure": "AGIOS" }],
+    "jointures": [],
+    "affichages": [{ "nom_affichage": "Graphique linéaire" }],
+    "filtres_pop": [],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "sum",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "AGIOS.Taux_interet_annuel",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [
+              {
+                "champs_cible": "AGIOS.Code_Tiers"
+              }
+            ],
+            "valeur": null,
+            "operateur_arithmetique": ",("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "EvTx"
+      }
+    ],
+    "champs": [
+      {
+        "nom": null,
+        "as_nom": null,
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "AxesY",
+        "typeAttribut": "Integer"
+      },
+      {
+        "nom": "AGIOS.Date_dernier_calcul",
+        "as_nom": "AxesX-67",
+        "taille": null,
+        "position": null,
+        "parametre": "AGIOS.Date_dernier_calcul",
+        "separateur": null,
+        "type": "AxesX",
+        "typeAttribut": "DATE"
+      },
+      {
+        "nom": "EvTx",
+        "as_nom": "EvTx",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      }
+    ],
+    "nom": "Evolution Taux Interet Annuel des Clients",
+    "description": ""
+  },
+  {
+    "formats_selected": [{ "id_structure": 7, "name_structure": "AGIOS" }],
+    "jointures": [],
+    "affichages": [{ "nom_affichage": "Graphique en barres" }],
+    "filtres_pop": [],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "sum",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "AGIOS.Taux_interet_annuel",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [
+              {
+                "champs_cible": "AGIOS.Code_Tiers"
+              }
+            ],
+            "valeur": null,
+            "operateur_arithmetique": ",("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "EvTx"
+      }
+    ],
+    "champs": [
+      {
+        "nom": null,
+        "as_nom": null,
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "AxesY",
+        "typeAttribut": "Integer"
+      },
+      {
+        "nom": "AGIOS.Date_dernier_calcul",
+        "as_nom": "AxesX-67",
+        "taille": null,
+        "position": null,
+        "parametre": "AGIOS.Date_dernier_calcul",
+        "separateur": null,
+        "type": "AxesX",
+        "typeAttribut": "DATE"
+      },
+      {
+        "nom": "EvTx",
+        "as_nom": "EvTx",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      }
+    ],
+    "nom": "Evolution Taux Interet Annuel des Clients",
+    "description": ""
+  },
+  {
+    "formats_selected": [
+      { "id_structure": 4, "name_structure": "INVESTISSEMENTS" }
+    ],
+    "jointures": [],
+    "affichages": [{ "nom_affichage": "Tableau simple" }],
+    "filtres_pop": [
+      {
+        "operateur_logique": null,
+        "champs_cible": "INVESTISSEMENTS.phase",
+        "operateur_comparaison": "==",
+        "parametre": "ES"
+      }
+    ],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "show",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "INVESTISSEMENTS.montant_investissement",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "show1"
+      }
+    ],
+    "champs": [
+      {
+        "nom": "show1",
+        "as_nom": "show1",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      },
+      {
+        "nom": "INVESTISSEMENTS.contrat",
+        "as_nom": "1-INVESTISSEMENTS.contrat",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "INVESTISSEMENTS.taccode",
+        "as_nom": "2-INVESTISSEMENTS.taccode",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "INVESTISSEMENTS.materiel_num",
+        "as_nom": "3-INVESTISSEMENTS.materiel_num",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      }
+    ],
+    "nom": "Investissements_tableau",
+    "description": ""
+  },
+  {
+    "formats_selected": [
+      { "id_structure": 3, "name_structure": "AUDIT_BANCAIRE" }
+    ],
+    "jointures": [],
+    "affichages": [{ "nom_affichage": "Cartographie circulaires" }],
+    "filtres_pop": [],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "avg",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "AUDIT_BANCAIRE.montent",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [
+              {
+                "champs_cible": "AUDIT_BANCAIRE.compt"
+              }
+            ],
+            "valeur": null,
+            "operateur_arithmetique": ",("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "M_Vente"
+      }
+    ],
+    "champs": [
+      {
+        "nom": "AUDIT_BANCAIRE.lat",
+        "as_nom": "Latitude-857",
+        "taille": null,
+        "position": null,
+        "parametre": "AUDIT_BANCAIRE.lat",
+        "separateur": null,
+        "type": "lat",
+        "typeAttribut": "integer"
+      },
+      {
+        "nom": "AUDIT_BANCAIRE.lon",
+        "as_nom": "Longitude-858",
+        "taille": null,
+        "position": null,
+        "parametre": "AUDIT_BANCAIRE.lon",
+        "separateur": null,
+        "type": "lon",
+        "typeAttribut": "integer"
+      },
+      {
+        "nom": "maps.Pays",
+        "as_nom": "maps-niv",
+        "taille": null,
+        "position": null,
+        "parametre": "maps.Pays",
+        "separateur": null,
+        "type": "maps",
+        "typeAttribut": null
+      },
+      {
+        "nom": "M_Vente",
+        "as_nom": "M_Vente",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      }
+    ],
+    "nom": "Stat Env",
+    "description": "Moyenne des ventes par pays et par compte"
+  },
+  {
+    "formats_selected": [
+      { "id_structure": 4, "name_structure": "INVESTISSEMENTS" }
+    ],
+    "jointures": [],
+    "affichages": [{ "nom_affichage": "Histogramme" }],
+    "filtres_pop": [
+      {
+        "operateur_logique": null,
+        "champs_cible": "INVESTISSEMENTS.phase",
+        "operateur_comparaison": "==",
+        "parametre": "ES"
+      }
+    ],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "sum",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "INVESTISSEMENTS.montant_investissement",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [
+              {
+                "champs_cible": "INVESTISSEMENTS.taccode"
+              }
+            ],
+            "valeur": null,
+            "operateur_arithmetique": ",("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "sum1"
+      }
+    ],
+    "champs": [
+      {
+        "nom": null,
+        "as_nom": null,
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "AxesY",
+        "typeAttribut": "Integer"
+      },
+      {
+        "nom": "INVESTISSEMENTS.taccode",
+        "as_nom": "AxesX-22",
+        "taille": null,
+        "position": null,
+        "parametre": "INVESTISSEMENTS.taccode",
+        "separateur": null,
+        "type": "AxesX",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "sum1",
+        "as_nom": "sum1",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      }
+    ],
+    "nom": "Investissements_hist",
+    "description": ""
   }
 ]
