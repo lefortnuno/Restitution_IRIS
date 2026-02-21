@@ -34,18 +34,50 @@ node {
 
     }
 
-    stage('Restt') { 
-        bat '''  
-        curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
+    // stage('Restt') { 
+    //     bat '''  
+    //     curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
   
-        for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
+    //     for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
  
-        curl -f -X POST http://localhost:8000/api/restitutions/ ^
-            -H "Content-Type: application/json" ^
-            -H "Authorization: Bearer %ACCESS_TOKEN%" ^
-            -d "{\\"nom\\":\\"resttAuto\\",\\"formats_selected\\":[],\\"jointures\\":[],\\"affichages\\":[{\\"nom_affichage\\":\\"Tableau simple\\"}],\\"filtres_pop\\":[],\\"conditions\\":[],\\"operation_selected\\":[],\\"champs\\":[]}"
+    //     curl -f -X POST http://localhost:8000/api/restitutions/ ^
+    //         -H "Content-Type: application/json" ^
+    //         -H "Authorization: Bearer %ACCESS_TOKEN%" ^
+    //         -d "{\\"nom\\":\\"Moyenne Global Montant Impayé par Flag\\",\\"formats_selected\\":[],\\"jointures\\":[],\\"affichages\\":[{\\"nom_affichage\\":\\"Diagramme circulaire\\"}],\\"filtres_pop\\":[],\\"conditions\\":[],\\"operation_selected\\":[],\\"champs\\":[]}"
 
-        del token.json 
+    //     del token.json 
+    //     '''
+    // }
+
+    stage('Restt') { 
+        bat '''
+        curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
+
+        for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
+
+        powershell -Command ^
+            "$data = Get-Content restt.json | ConvertFrom-Json; ^
+            foreach ($item in $data) { ^
+                $json = $item | ConvertTo-Json -Depth 10; ^
+                curl -f -X POST http://localhost:8000/api/restitutions/ ^
+                    -H 'Content-Type: application/json' ^
+                    -H ('Authorization: Bearer ' + $env:ACCESS_TOKEN) ^
+                    -d $json; ^
+            }"
+
+        del token.json
+        '''
+    }
+
+    stage('Entrepot') {
+        bat '''
+        echo === Import SQL into Postgres Docker ===
+
+        docker cp restt.sql dbb-1:/restt.sql
+
+        docker exec -i dbb-1 psql -U postgres -d postgres -f /restt.sql
+
+        echo === Postgres tables created ===
         '''
     }
 

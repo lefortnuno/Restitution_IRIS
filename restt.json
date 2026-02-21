@@ -1,0 +1,151 @@
+[
+  {
+    "formats_selected": [
+      {
+        "id_structure": 5,
+        "name_structure": "CREDIT_CREANCE"
+      }
+    ],
+    "jointures": [],
+    "affichages": [
+      {
+        "nom_affichage": "Diagramme circulaire"
+      }
+    ],
+    "filtres_pop": [],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "avg",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "CREDIT_CREANCE.Mnt_Impaye",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [
+              {
+                "champs_cible": "CREDIT_CREANCE.Flag_restructure"
+              }
+            ],
+            "valeur": null,
+            "operateur_arithmetique": ",("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "MoyenneMT"
+      }
+    ],
+    "champs": [
+      {
+        "nom": "MoyenneMT",
+        "as_nom": "MoyenneMT",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      }
+    ],
+    "nom": "Moyenne Global Montant Impayé par Flag",
+    "description": ""
+  },
+  {
+    "formats_selected": [{ "id_structure": 6, "name_structure": "GARANTIES" }],
+    "jointures": [],
+    "affichages": [{ "nom_affichage": "Tableau croisée dynamique" }],
+    "filtres_pop": [],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "sum",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "GARANTIES.Montant_Couverture",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "SommeM"
+      }
+    ],
+    "champs": [
+      {
+        "nom": "GARANTIES.Code_Tiers",
+        "as_nom": "0-GARANTIES.Code_Tiers",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "GARANTIES.Type_Garantie",
+        "as_nom": "1-GARANTIES.Type_Garantie",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "SommeM",
+        "as_nom": "SommeM",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      }
+    ],
+    "nom": "Montant Couverture par type et Code de Garantie",
+    "description": ""
+  }
+]
