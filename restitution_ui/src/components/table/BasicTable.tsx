@@ -59,8 +59,6 @@ export default function BasicTable({
   const { mutate: deleteBulk, isPending: isBulkDeleting } =
     useDeleteBulkRestitutions();
 
-  console.log("data=== ", JSON.stringify(data[5]));
-
   const table = useReactTable({
     data,
     columns,

@@ -324,98 +324,6 @@
   },
   {
     "formats_selected": [
-      { "id_structure": 4, "name_structure": "INVESTISSEMENTS" }
-    ],
-    "jointures": [],
-    "affichages": [{ "nom_affichage": "Tableau simple" }],
-    "filtres_pop": [
-      {
-        "operateur_logique": null,
-        "champs_cible": "INVESTISSEMENTS.phase",
-        "operateur_comparaison": "==",
-        "parametre": "ES"
-      }
-    ],
-    "operation_selected": [
-      {
-        "conditions": [],
-        "expressions": [
-          {
-            "clause_regroupement": [],
-            "valeur": null,
-            "operateur_arithmetique": "("
-          },
-          {
-            "clause_regroupement": [],
-            "valeur": "show",
-            "operateur_arithmetique": "("
-          },
-          {
-            "clause_regroupement": [],
-            "valeur": "INVESTISSEMENTS.montant_investissement",
-            "operateur_arithmetique": null
-          },
-          {
-            "clause_regroupement": [],
-            "valeur": null,
-            "operateur_arithmetique": ")"
-          },
-          {
-            "clause_regroupement": [],
-            "valeur": null,
-            "operateur_arithmetique": ")"
-          }
-        ],
-        "as_nom": "show1"
-      }
-    ],
-    "champs": [
-      {
-        "nom": "show1",
-        "as_nom": "show1",
-        "taille": null,
-        "position": null,
-        "parametre": null,
-        "separateur": null,
-        "type": "op_",
-        "typeAttribut": null
-      },
-      {
-        "nom": "INVESTISSEMENTS.contrat",
-        "as_nom": "1-INVESTISSEMENTS.contrat",
-        "taille": null,
-        "position": null,
-        "parametre": null,
-        "separateur": null,
-        "type": "none",
-        "typeAttribut": "VARCHAR"
-      },
-      {
-        "nom": "INVESTISSEMENTS.taccode",
-        "as_nom": "2-INVESTISSEMENTS.taccode",
-        "taille": null,
-        "position": null,
-        "parametre": null,
-        "separateur": null,
-        "type": "none",
-        "typeAttribut": "VARCHAR"
-      },
-      {
-        "nom": "INVESTISSEMENTS.materiel_num",
-        "as_nom": "3-INVESTISSEMENTS.materiel_num",
-        "taille": null,
-        "position": null,
-        "parametre": null,
-        "separateur": null,
-        "type": "none",
-        "typeAttribut": "VARCHAR"
-      }
-    ],
-    "nom": "Investissements_tableau",
-    "description": ""
-  },
-  {
-    "formats_selected": [
       { "id_structure": 3, "name_structure": "AUDIT_BANCAIRE" }
     ],
     "jointures": [],
@@ -515,18 +423,18 @@
   },
   {
     "formats_selected": [
-      { "id_structure": 4, "name_structure": "INVESTISSEMENTS" }
-    ],
-    "jointures": [],
-    "affichages": [{ "nom_affichage": "Histogramme" }],
-    "filtres_pop": [
       {
-        "operateur_logique": null,
-        "champs_cible": "INVESTISSEMENTS.phase",
-        "operateur_comparaison": "==",
-        "parametre": "ES"
+        "id_structure": 6,
+        "name_structure": "GARANTIES"
       }
     ],
+    "jointures": [],
+    "affichages": [
+      {
+        "nom_affichage": "Histogramme"
+      }
+    ],
+    "filtres_pop": [],
     "operation_selected": [
       {
         "conditions": [],
@@ -543,22 +451,8 @@
           },
           {
             "clause_regroupement": [],
-            "valeur": "INVESTISSEMENTS.montant_investissement",
+            "valeur": "GARANTIES.Montant_Couverture",
             "operateur_arithmetique": null
-          },
-          {
-            "clause_regroupement": [
-              {
-                "champs_cible": "INVESTISSEMENTS.taccode"
-              }
-            ],
-            "valeur": null,
-            "operateur_arithmetique": ",("
-          },
-          {
-            "clause_regroupement": [],
-            "valeur": null,
-            "operateur_arithmetique": ")"
           },
           {
             "clause_regroupement": [],
@@ -571,7 +465,7 @@
             "operateur_arithmetique": ")"
           }
         ],
-        "as_nom": "sum1"
+        "as_nom": "Sommation"
       }
     ],
     "champs": [
@@ -586,18 +480,100 @@
         "typeAttribut": "Integer"
       },
       {
-        "nom": "INVESTISSEMENTS.taccode",
-        "as_nom": "AxesX-22",
+        "nom": "Sommation",
+        "as_nom": "Sommation",
         "taille": null,
         "position": null,
-        "parametre": "INVESTISSEMENTS.taccode",
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      },
+      {
+        "nom": "GARANTIES.Code_Tiers",
+        "as_nom": "AxesX-52",
+        "taille": null,
+        "position": null,
+        "parametre": "GARANTIES.Code_Tiers",
         "separateur": null,
         "type": "AxesX",
         "typeAttribut": "VARCHAR"
+      }
+    ],
+    "nom": "Montant Couverture par Code de Garantie",
+    "description": ""
+  },
+  {
+    "formats_selected": [
+      {
+        "id_structure": 6,
+        "name_structure": "GARANTIES"
+      }
+    ],
+    "jointures": [],
+    "affichages": [
+      {
+        "nom_affichage": "Histogramme"
+      }
+    ],
+    "filtres_pop": [],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "sum",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "GARANTIES.Montant_Couverture",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "SUM"
+      }
+    ],
+    "champs": [
+      {
+        "nom": null,
+        "as_nom": null,
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "AxesY",
+        "typeAttribut": "Integer"
       },
       {
-        "nom": "sum1",
-        "as_nom": "sum1",
+        "nom": "GARANTIES.Date_ARRETE",
+        "as_nom": "AxesX-58",
+        "taille": null,
+        "position": null,
+        "parametre": "GARANTIES.Date_ARRETE",
+        "separateur": null,
+        "type": "AxesX",
+        "typeAttribut": "DATE"
+      },
+      {
+        "nom": "SUM",
+        "as_nom": "SUM",
         "taille": null,
         "position": null,
         "parametre": null,
@@ -606,7 +582,109 @@
         "typeAttribut": null
       }
     ],
-    "nom": "Investissements_hist",
+    "nom": "Montant Couverture par date d'arret",
+    "description": ""
+  },
+  {
+    "formats_selected": [
+      {
+        "id_structure": 3,
+        "name_structure": "AUDIT_BANCAIRE"
+      }
+    ],
+    "jointures": [],
+    "affichages": [
+      {
+        "nom_affichage": "Tableau simple"
+      }
+    ],
+    "filtres_pop": [],
+    "operation_selected": [
+      {
+        "conditions": [],
+        "expressions": [
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "show",
+            "operateur_arithmetique": "("
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": "AUDIT_BANCAIRE.montent",
+            "operateur_arithmetique": null
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          },
+          {
+            "clause_regroupement": [],
+            "valeur": null,
+            "operateur_arithmetique": ")"
+          }
+        ],
+        "as_nom": "montant"
+      }
+    ],
+    "champs": [
+      {
+        "nom": "AUDIT_BANCAIRE.compt",
+        "as_nom": "0-AUDIT_BANCAIRE.compt",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "AUDIT_BANCAIRE.codeT",
+        "as_nom": "1-AUDIT_BANCAIRE.codeT",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "AUDIT_BANCAIRE.region",
+        "as_nom": "2-AUDIT_BANCAIRE.region",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "VARCHAR"
+      },
+      {
+        "nom": "AUDIT_BANCAIRE.date",
+        "as_nom": "3-AUDIT_BANCAIRE.date",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "none",
+        "typeAttribut": "date"
+      },
+      {
+        "nom": "montant",
+        "as_nom": "montant",
+        "taille": null,
+        "position": null,
+        "parametre": null,
+        "separateur": null,
+        "type": "op_",
+        "typeAttribut": null
+      }
+    ],
+    "nom": "Affichage Basique",
     "description": ""
   }
 ]
