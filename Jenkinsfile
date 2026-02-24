@@ -131,11 +131,11 @@ node {
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
-            ssh -i %PEM_FILE% ${SERVER} cd /home/ubuntu/aws_restitution && docker exec restt-backend python manage.py init_prod
+            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker exec restt-backend python manage.py init_prod"
             """ 
 
             bat """
-            ssh -i %PEM_FILE% ${SERVER} docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql
+            ssh -i %PEM_FILE% ${SERVER} "docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
             """
 
             sh """
