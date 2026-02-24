@@ -94,13 +94,21 @@ node {
         }
     }
 
+    // stage('Trigger GitLab Deploy') {
+    //     withCredentials([string(credentialsId: 'gitlab-trigger-token', variable: 'TRIGGER_TOKEN')]) {
+    //         bat """
+    //         curl -X POST \
+    //         -F token=%TRIGGER_TOKEN% \
+    //         -F ref=main \
+    //         https://gitlab.com/api/v4/projects/79733394/trigger/pipeline
+    //         """
+    //     }
+    // }
+
     stage('Trigger GitLab Deploy') {
         withCredentials([string(credentialsId: 'gitlab-trigger-token', variable: 'TRIGGER_TOKEN')]) {
             bat """
-            curl -X POST \
-            -F token=%TRIGGER_TOKEN% \
-            -F ref=main \
-            https://gitlab.com/api/v4/projects/79733394/trigger/pipeline
+            curl -X POST -F "token=%TRIGGER_TOKEN%" -F "ref=main" https://gitlab.com/api/v4/projects/79733394/trigger/pipeline
             """
         }
     }
