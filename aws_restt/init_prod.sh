@@ -14,4 +14,10 @@ jq -c '.[]' /home/ubuntu/aws_restitution/restt.json | while read row; do
     -d "$row"
 done
 
-echo "=== DONE ==="
+echo "=== Verify Insert ==="
+
+curl -s -X GET http://localhost:8000/api/restitutions/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json"
+ 
+echo "=== EC2 DONE ==="
