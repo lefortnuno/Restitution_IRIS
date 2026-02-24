@@ -128,14 +128,10 @@ node {
     stage('Init Prod') {
         sleep 120
 
-        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) { 
 
             bat """
-            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker exec restt-backend python manage.py init_prod"
-            """ 
-
-            bat """
-            ssh -i %PEM_FILE% ${SERVER} "docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
             """
 
             sleep 2
@@ -158,24 +154,38 @@ node {
             """
 
             sleep 2
-            bat """  
-                ssh -i %PEM_FILE% ${SERVER} ' 
-                    curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
+            // bat """  
+            //     ssh -i %PEM_FILE% ${SERVER} ' 
+            //         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
 
-                    for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
+            //         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
 
-                    echo $token = $env:ACCESS_TOKEN > send.ps1
-                    echo $data = Get-Content restt.json ^| ConvertFrom-Json >> send.ps1
-                    echo foreach ($item in $data) { >> send.ps1
-                    echo     $json = $item ^| ConvertTo-Json -Depth 20 >> send.ps1
-                    echo     Invoke-RestMethod -Uri "http://localhost:8000/api/restitutions/" -Method Post -Headers @{ Authorization = "Bearer " + $token } -ContentType "application/json" -Body $json >> send.ps1
-                    echo } >> send.ps1
+            //         echo $token = $env:ACCESS_TOKEN > send.ps1
+            //         echo $data = Get-Content restt.json ^| ConvertFrom-Json >> send.ps1
+            //         echo foreach ($item in $data) { >> send.ps1
+            //         echo     $json = $item ^| ConvertTo-Json -Depth 20 >> send.ps1
+            //         echo     Invoke-RestMethod -Uri "http://localhost:8000/api/restitutions/" -Method Post -Headers @{ Authorization = "Bearer " + $token } -ContentType "application/json" -Body $json >> send.ps1
+            //         echo } >> send.ps1
 
-                    powershell -NoProfile -ExecutionPolicy Bypass -File send.ps1
+            //         powershell -NoProfile -ExecutionPolicy Bypass -File send.ps1
 
-                    del send.ps1
-                    del token.json
-                '
+            //         del send.ps1
+            //         del token.json
+            //     '
+            // """
+
+            bat """
+                ssh -i %PEM_FILE% ${SERVER} " \
+                TOKEN=\$(curl -s -X POST http://localhost:8000/token/ \
+                -H 'Content-Type: application/json' \
+                -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && \
+                echo Token received && \
+                cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do \
+                curl -s -X POST http://localhost:8000/api/restitutions/ \
+                -H \"Authorization: Bearer \$TOKEN\" \
+                -H 'Content-Type: application/json' \
+                -d \"\$row\"; \
+                done"
             """
         }
     }  
