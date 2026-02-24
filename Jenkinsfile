@@ -138,29 +138,28 @@ node {
             ssh -i %PEM_FILE% ${SERVER} "docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
             """
 
-            sh """
-            ssh -o StrictHostKeyChecking=no ${SERVER} '
-                docker exec restt-backend python -c "
-                    import os, django
-                    os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"config.settings\")
-                    django.setup()
-                    from django.contrib.auth import get_user_model
-                    User = get_user_model()
-                    user, created = User.objects.get_or_create(
-                        username=\"trofel\",
-                        email=\"trofel.2025@gmail.com\"
-                    )
-                    user.set_password(\"Trofel.@#\")
-                    user.is_superuser=True
-                    user.is_staff=True
-                    user.save()
-                "
-            '
+            sleep 2
+            bat """
+                ssh -i %PEM_FILE% ${SERVER} '
+                    docker exec restt-backend python manage.py shell -c "
+                        from django.contrib.auth import get_user_model
+                        User = get_user_model()
+                        user, created = User.objects.get_or_create(
+                            username='trofel',
+                            email='trofel.2025@gmail.com'
+                        )
+                        user.set_password('Trofel.@#')
+                        user.is_superuser = True
+                        user.is_staff = True
+                        user.save()
+                        print('Superuser created or updated')
+                    "
+                '
             """
 
-            sleep 5
-            sh """  
-                ssh ${SERVER} ' 
+            sleep 2
+            bat """  
+                ssh -i %PEM_FILE% ${SERVER} ' 
                     curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
 
                     for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
