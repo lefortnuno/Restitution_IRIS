@@ -19,3 +19,5 @@ docker exec restt-backendd-1 python -c "import os, django; os.environ.setdefault
 ## groq
 
 bat 'docker exec restt-backendd-1 printenv GROQ_API_KEY'
+
+###

@@ -1,0 +1,28 @@
+stages:
+  - deploy
+
+# ----------------------------------------------------------
+# DEPLOY
+# ----------------------------------------------------------
+
+deploy:
+  stage: deploy
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker compose pull
+    - docker compose up -d --remove-orphans
+  only:
+    - main
+
+# deploy:
+#   stage: deploy
+#   tags:
+#     - Restt-Iris-Runner
+#   script:
+#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#     - export GROQ_API_KEY=$GROQ_API_KEY
+#     - export REACT_APP_API_TOKEN=$REACT_APP_API_TOKEN
+#     - docker compose -f $CI_PROJECT_DIR/docker-compose.yaml pull
+#     - docker compose -f $CI_PROJECT_DIR/docker-compose.yaml up -d --remove-orphans
+#   only:
+#     - main

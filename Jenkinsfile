@@ -77,4 +77,19 @@ node {
                     """
     }
     
+    stage('Push Images') {
+        withCredentials([usernamePassword(
+            credentialsId: 'gitlab-registry', 
+            variable: 'REG_PASS'
+        )]) {
+
+            bat "docker login registry.gitlab.com -u lefortnuno -p %REG_PASS%"
+
+            bat "docker tag restt-backendd registry.gitlab.com/lefortnuno/Restitution_IRIS/backend:latest" 
+            bat "docker tag restt-frontendd registry.gitlab.com/lefortnuno/Restitution_IRIS/frontend:latest"
+
+            bat "docker push registry.gitlab.com/lefortnuno/Restitution_IRIS/backend:latest"
+            bat "docker push registry.gitlab.com/lefortnuno/Restitution_IRIS/frontend:latest"
+        }
+    }
 }
