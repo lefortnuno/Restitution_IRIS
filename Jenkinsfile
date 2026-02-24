@@ -80,7 +80,7 @@ node {
     }
 
     stage('Prepare1 EC2') {
-        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
             ssh -i %PEM_FILE% -o StrictHostKeyChecking=no %SERVER% ^
@@ -139,7 +139,7 @@ node {
         sleep 50
         sleep 50
 
-        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
             ssh -i %PEM_FILE% %SERVER% ^
@@ -163,7 +163,7 @@ node {
     }
 
     stage('SuperUser1') {
-        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
             ssh -i %PEM_FILE% %SERVER% ^
@@ -173,7 +173,7 @@ node {
     }
 
     stage('Entrepot SQL1') {
-        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
             scp -i %PEM_FILE% restt.sql ^
@@ -261,6 +261,11 @@ node {
                 del send.ps1
                 del token.json
             '
+
+            sleep 5
+            sh """
+            exit
+            """
 
             """
         }
