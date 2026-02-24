@@ -151,9 +151,9 @@ node {
             //         " 
             // """
 
-            bat """
-            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker exec restt-backend python manage.py shell -c \\"from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save(); print('Superuser created or updated')\\""
-            """
+            // bat """
+            // ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker exec restt-backend python manage.py shell -c \\"from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save(); print('Superuser created or updated')\\""
+            // """
 
             sleep 2
             // bat """  
