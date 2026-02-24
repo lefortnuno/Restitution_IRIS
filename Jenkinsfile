@@ -190,9 +190,9 @@ node {
             //     done"
             // """
 
-            bat """
-            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "TOKEN=\\$(curl -s -X POST http://localhost:8000/token/ -H \\"Content-Type: application/json\\" -d '{\\"username\\":\\"trofel\\",\\"password\\":\\"Trofel.@#\\"}' | jq -r .access) && echo Token OK && cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do curl -s -X POST http://localhost:8000/api/restitutions/ -H \\"Authorization: Bearer \\$TOKEN\\" -H \\"Content-Type: application/json\\" -d \\"\\$row\\"; done"
-            """
+            bat '''
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "TOKEN=$(curl -s -X POST http://localhost:8000/token/ -H \"Content-Type: application/json\" -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && echo Token OK && cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do curl -s -X POST http://localhost:8000/api/restitutions/ -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d \"$row\"; done"
+            '''
         }
     }  
 }
