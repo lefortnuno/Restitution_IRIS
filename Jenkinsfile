@@ -36,7 +36,7 @@ node {
 
     }
 
-    stage('Restt') {
+    stage('Restitution') {
         bat '''
         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
 
@@ -126,7 +126,7 @@ node {
     }
 
     stage('Init Prod') {
-        sleep 120
+        sleep 30
 
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) { 
 
@@ -140,23 +140,10 @@ node {
             """
 
             sleep 2 
-            bat """
-                ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} " \
-                TOKEN=\$(curl -s -X POST http://localhost:8000/token/ \
-                -H 'Content-Type: application/json' \
-                -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && \
-                echo Token received && \
-                cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do \
-                curl -s -X POST http://localhost:8000/api/restitutions/ \
-                -H \"Authorization: Bearer \$TOKEN\" \
-                -H 'Content-Type: application/json' \
-                -d \"\$row\"; \
-                done"
-            """
-
-            // bat '''
-            // ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "TOKEN=$(curl -s -X POST http://localhost:8000/token/ -H \"Content-Type: application/json\" -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && echo Token OK && cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do curl -s -X POST http://localhost:8000/api/restitutions/ -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d \"$row\"; done"
-            // '''
+            bat '''
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ubuntu@13.48.104.63 "TOKEN=$(curl -s -X POST http://localhost:8000/token/ -H \"Content-Type: application/json\" -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && echo Token_OK && for row in $(jq -c '.[]' /home/ubuntu/aws_restitution/restt.json); do curl -s -X POST http://localhost:8000/api/restitutions/ -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d \"$row\"; done"
+            '''
+ 
         }
     }  
 }
