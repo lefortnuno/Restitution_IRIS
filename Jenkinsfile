@@ -79,30 +79,30 @@ node {
     //                 """
     // }
 
-    // stage('Prepare EC2') {
-    //     withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
+    stage('Prepare EC2') {
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
-    //         bat """
-    //         ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} mkdir -p /home/ubuntu/aws_restitution
-    //         """
+            // bat """
+            // ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} mkdir -p /home/ubuntu/aws_restitution
+            // """
 
-    //         bat """
-    //         scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
-    //         """
+            // bat """
+            // scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
+            // """
             
-    //         // bat """
-    //         // scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\init_prod.sh ${SERVER}:/home/ubuntu/aws_restitution/init_prod.sh
-    //         // """
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\init_prod.sh ${SERVER}:/home/ubuntu/aws_restitution/init_prod.sh
+            """
 
-    //         bat """
-    //         scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
-    //         """
+            // bat """
+            // scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
+            // """
 
-    //         bat """
-    //         scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.json ${SERVER}:/home/ubuntu/aws_restitution/restt.json
-    //         """
-    //     }
-    // } 
+            // bat """
+            // scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.json ${SERVER}:/home/ubuntu/aws_restitution/restt.json
+            // """
+        }
+    } 
 
     // stage('Push Images') {
     //     withCredentials([usernamePassword(
@@ -134,9 +134,9 @@ node {
 
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) { 
 
-            // // bat """
-            // // ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && sudo chmod +x init_prod.sh && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
-            // // """
+            bat """
+            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && sudo chmod +x init_prod.sh && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            """
 
             // bat """
             // ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
@@ -148,9 +148,9 @@ node {
             // """
 
             sleep 2 
-            bat """
-            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "cd /home/ubuntu/aws_restitution && ./init_prod.sh"
-            """ 
+            // bat """
+            // ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "cd /home/ubuntu/aws_restitution && ./init_prod.sh"
+            // """ 
         }
     }  
 
