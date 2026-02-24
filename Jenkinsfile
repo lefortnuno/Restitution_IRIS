@@ -89,6 +89,10 @@ node {
             bat """
             scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
             """
+            
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\init_prod.sh ${SERVER}:/home/ubuntu/aws_restitution/init_prod.sh
+            """
 
             bat """
             scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
@@ -140,10 +144,11 @@ node {
             """
 
             sleep 2 
-            bat '''
-            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ubuntu@13.48.104.63 "TOKEN=$(curl -s -X POST http://localhost:8000/token/ -H \"Content-Type: application/json\" -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && echo Token_OK && for row in $(jq -c '.[]' /home/ubuntu/aws_restitution/restt.json); do curl -s -X POST http://localhost:8000/api/restitutions/ -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d \"$row\"; done"
-            '''
+            bat """
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "bash /home/ubuntu/aws_restitution/init_prod.sh"
+            """
  
         }
     }  
+
 }
