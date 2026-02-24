@@ -11,9 +11,11 @@ deploy_production:
     - echo "$SSH_PRIVATE_KEY" > key.pem
     - chmod 600 key.pem
     - ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@13.48.104.63 "
+        cd /home/ubuntu/aws_restitution &&
         docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD &&
         docker pull registry.gitlab.com/lefortnuno/restitution_iris/backend:latest &&
         docker pull registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest &&
+        docker compose down &&
         docker compose up -d
       "
   only:
