@@ -83,13 +83,11 @@ node {
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
-            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no %SERVER% ^
-            "mkdir -p /home/ubuntu/aws_restitution"
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} mkdir -p /home/ubuntu/aws_restitution
             """
 
             bat """
-            scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ^
-            %SERVER%:/home/ubuntu/aws_restitution/docker-compose.yml
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
             """
         }
     }
@@ -142,8 +140,7 @@ node {
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
-            ssh -i %PEM_FILE% %SERVER% ^
-            "cd /home/ubuntu/aws_restitution && docker exec restt-backend python manage.py init_prod"
+            ssh -i %PEM_FILE% ${SERVER} cd /home/ubuntu/aws_restitution && docker exec restt-backend python manage.py init_prod
             """
         }
     }
@@ -166,8 +163,7 @@ node {
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
-            ssh -i %PEM_FILE% %SERVER% ^
-            "docker exec restt-backend python manage.py init_prod"
+            ssh -i %PEM_FILE% ${SERVER} docker exec restt-backend python manage.py init_prod
             """
         }
     }
@@ -176,13 +172,11 @@ node {
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
 
             bat """
-            scp -i %PEM_FILE% restt.sql ^
-            %SERVER%:/home/ubuntu/aws_restitution/restt.sql
+            scp -i %PEM_FILE% restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
             """
 
             bat """
-            ssh -i %PEM_FILE% %SERVER% ^
-            "docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            ssh -i %PEM_FILE% ${SERVER} docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql
             """
         }
     }
