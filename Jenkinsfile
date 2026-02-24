@@ -92,21 +92,21 @@ node {
         }
     }
 
-    stage('Prepare EC2') {
-        sshagent(['ec2-ssh']) {
+    // stage('Prepare EC2') {
+    //     sshagent(['ec2-ssh']) {
 
-            sh """
-            ssh -o StrictHostKeyChecking=no ${SERVER} '
-            mkdir -p /home/ubuntu/aws_restitution
-            '
-            """
+    //         sh """
+    //         ssh -o StrictHostKeyChecking=no ${SERVER} '
+    //         mkdir -p /home/ubuntu/aws_restitution
+    //         '
+    //         """
 
-            sh """
-            scp -o StrictHostKeyChecking=no aws_restt/docker-compose.yml \
-            ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
-            """ 
-        }
-    }
+    //         sh """
+    //         scp -o StrictHostKeyChecking=no aws_restt/docker-compose.yml \
+    //         ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
+    //         """ 
+    //     }
+    // }
 
     stage('Push Images') {
         withCredentials([usernamePassword(
