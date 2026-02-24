@@ -90,9 +90,9 @@ node {
             scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
             """
             
-            bat """
-            scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\init_prod.sh ${SERVER}:/home/ubuntu/aws_restitution/init_prod.sh
-            """
+            // bat """
+            // scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\init_prod.sh ${SERVER}:/home/ubuntu/aws_restitution/init_prod.sh
+            // """
 
             bat """
             scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
@@ -134,10 +134,14 @@ node {
 
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) { 
 
-            bat """
-            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && sudo chmod +x init_prod.sh && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
-            """
+            // bat """
+            // ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && sudo chmod +x init_prod.sh && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            // """
 
+            bat """
+            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            """
+            
             sleep 2 
             bat """
             ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker exec restt-backend python manage.py shell -c \\"from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save(); print('Superuser created or updated')\\""
