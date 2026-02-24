@@ -85,12 +85,12 @@ node {
         )]) {
 
             bat "docker login registry.gitlab.com -u %REG_USER% -p %REG_PASS%"
+                        
+            bat "docker tag restt-backendd registry.gitlab.com/lefortnuno/restitution_iris/backend:latest"
+            bat "docker tag restt-frontendd registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest"
 
-            bat "docker tag restt-backendd registry.gitlab.com/lefortnuno/Restitution_IRIS/backend:latest" 
-            bat "docker tag restt-frontendd registry.gitlab.com/lefortnuno/Restitution_IRIS/frontend:latest"
-
-            bat "docker push registry.gitlab.com/lefortnuno/Restitution_IRIS/backend:latest"
-            bat "docker push registry.gitlab.com/lefortnuno/Restitution_IRIS/frontend:latest"
+            bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/backend:latest"
+            bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest"
         }
     }
 
