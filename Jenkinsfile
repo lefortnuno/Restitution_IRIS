@@ -8,10 +8,9 @@ node {
     } 
 
     stage('Build') {  
+        bat 'docker compose down -v'
         withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY')]) {
-            bat 'docker compose down -v'
-            bat 'docker compose build --no-cache'
-            bat 'docker compose up -d'
+            bat 'docker compose up -d --build'
         }     
         sleep 40
     }
