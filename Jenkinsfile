@@ -79,6 +79,21 @@ node {
                     """
     }
 
+    stage('Prepare1 EC2') {
+        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+
+            bat """
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no %SERVER% ^
+            "mkdir -p /home/ubuntu/aws_restitution"
+            """
+
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ^
+            %SERVER%:/home/ubuntu/aws_restitution/docker-compose.yml
+            """
+        }
+    }
+
     stage('Prepare EC2') {
         sshagent(['ec2-ssh']) {
 
@@ -91,7 +106,7 @@ node {
             sh """
             scp -o StrictHostKeyChecking=no aws_restt/docker-compose.yml \
             ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
-            """
+            """ 
         }
     }
 
@@ -120,6 +135,19 @@ node {
         }
     }
 
+    stage('Init1 Prod') {
+        sleep 50
+        sleep 50
+
+        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+
+            bat """
+            ssh -i %PEM_FILE% %SERVER% ^
+            "cd /home/ubuntu/aws_restitution && docker exec restt-backend python manage.py init_prod"
+            """
+        }
+    }
+
     stage('Init Prod') {
         sleep 50
         sleep 50
@@ -131,7 +159,110 @@ node {
             docker exec restt-backend python manage.py init_prod
             '
             """
+        } 
+    }
+
+    stage('SuperUser1') {
+        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+
+            bat """
+            ssh -i %PEM_FILE% %SERVER% ^
+            "docker exec restt-backend python manage.py init_prod"
+            """
         }
     }
 
+    stage('Entrepot SQL1') {
+        withCredentials([file(credentialsId: 'ec2-ssh', variable: 'PEM_FILE')]) {
+
+            bat """
+            scp -i %PEM_FILE% restt.sql ^
+            %SERVER%:/home/ubuntu/aws_restitution/restt.sql
+            """
+
+            bat """
+            ssh -i %PEM_FILE% %SERVER% ^
+            "docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            """
+        }
+    }
+
+    stage('SuperUser') {
+        sshagent(['ec2-ssh']) {
+            sh """
+            ssh -o StrictHostKeyChecking=no ${SERVER} '
+                docker exec restt-backend python -c "
+                    import os, django
+                    os.environ.setdefault(\"DJANGO_SETTINGS_MODULE\", \"config.settings\")
+                    django.setup()
+                    from django.contrib.auth import get_user_model
+                    User = get_user_model()
+                    user, created = User.objects.get_or_create(
+                        username=\"trofel\",
+                        email=\"trofel.2025@gmail.com\"
+                    )
+                    user.set_password(\"Trofel.@#\")
+                    user.is_superuser=True
+                    user.is_staff=True
+                    user.save()
+                "
+            '
+            """
+        }
+         
+    }
+
+    stage('Restt Import') {
+        sshagent(['ec2-ssh']) {
+            sh """
+            ssh ${SERVER} '
+            curl -X POST http://localhost:8000/token/ \
+            -H "Content-Type: application/json" \
+            -d "{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}" > token.json
+            '
+            """
+        }
+    }
+
+    stage('Entrepot SQL') {
+        sshagent(['ec2-ssh']) {
+            sh """
+            scp restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql 
+
+            ssh ${SERVER} '
+            docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql &&
+            docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql
+            '
+            """
+        }
+    }
+    
+    stage('Entrepot JSON') {
+        sshagent(['ec2-ssh']) {
+            sh """ 
+            scp restt.json ${SERVER}:/home/ubuntu/aws_restitution/restt.json
+
+            ssh ${SERVER} '
+                cd /home/ubuntu/aws_restitution
+
+                curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
+
+                for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
+
+                echo $token = $env:ACCESS_TOKEN > send.ps1
+                echo $data = Get-Content restt.json ^| ConvertFrom-Json >> send.ps1
+                echo foreach ($item in $data) { >> send.ps1
+                echo     $json = $item ^| ConvertTo-Json -Depth 20 >> send.ps1
+                echo     Invoke-RestMethod -Uri "http://localhost:8000/api/restitutions/" -Method Post -Headers @{ Authorization = "Bearer " + $token } -ContentType "application/json" -Body $json >> send.ps1
+                echo } >> send.ps1
+
+                powershell -NoProfile -ExecutionPolicy Bypass -File send.ps1
+
+                del send.ps1
+                del token.json
+            '
+
+            """
+        }
+    }
 }
