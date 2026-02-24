@@ -134,61 +134,25 @@ node {
             ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
             """
 
-            sleep 2
-            // bat """
-            //     ssh -i %PEM_FILE% ${SERVER} docker exec restt-backend python manage.py shell -c "
-            //             from django.contrib.auth import get_user_model
-            //             User = get_user_model()
-            //             user, created = User.objects.get_or_create(
-            //                 username='trofel',
-            //                 email='trofel.2025@gmail.com'
-            //             )
-            //             user.set_password('Trofel.@#')
-            //             user.is_superuser = True
-            //             user.is_staff = True
-            //             user.save()
-            //             print('Superuser created or updated')
-            //         " 
-            // """
+            sleep 2 
+            bat """
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker exec restt-backend python manage.py shell -c \\"from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save(); print('Superuser created or updated')\\""
+            """
 
-            // bat """
-            // ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker exec restt-backend python manage.py shell -c \\"from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save(); print('Superuser created or updated')\\""
-            // """
-
-            sleep 2
-            // bat """  
-            //     ssh -i %PEM_FILE% ${SERVER} ' 
-            //         curl -f -X POST http://localhost:8000/token/ -H "Content-Type: application/json" -d "{\\"username\\": \\"trofel\\", \\"password\\": \\"Trofel.@#\\"}" > token.json  
-
-            //         for /f "delims=" %%i in ('powershell -Command "(Get-Content token.json | ConvertFrom-Json).access"') do set ACCESS_TOKEN=%%i
-
-            //         echo $token = $env:ACCESS_TOKEN > send.ps1
-            //         echo $data = Get-Content restt.json ^| ConvertFrom-Json >> send.ps1
-            //         echo foreach ($item in $data) { >> send.ps1
-            //         echo     $json = $item ^| ConvertTo-Json -Depth 20 >> send.ps1
-            //         echo     Invoke-RestMethod -Uri "http://localhost:8000/api/restitutions/" -Method Post -Headers @{ Authorization = "Bearer " + $token } -ContentType "application/json" -Body $json >> send.ps1
-            //         echo } >> send.ps1
-
-            //         powershell -NoProfile -ExecutionPolicy Bypass -File send.ps1
-
-            //         del send.ps1
-            //         del token.json
-            //     '
-            // """
-
-            // bat """
-            //     ssh -i %PEM_FILE% ${SERVER} " \
-            //     TOKEN=\$(curl -s -X POST http://localhost:8000/token/ \
-            //     -H 'Content-Type: application/json' \
-            //     -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && \
-            //     echo Token received && \
-            //     cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do \
-            //     curl -s -X POST http://localhost:8000/api/restitutions/ \
-            //     -H \"Authorization: Bearer \$TOKEN\" \
-            //     -H 'Content-Type: application/json' \
-            //     -d \"\$row\"; \
-            //     done"
-            // """
+            sleep 2 
+            bat """
+                ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} " \
+                TOKEN=\$(curl -s -X POST http://localhost:8000/token/ \
+                -H 'Content-Type: application/json' \
+                -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && \
+                echo Token received && \
+                cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do \
+                curl -s -X POST http://localhost:8000/api/restitutions/ \
+                -H \"Authorization: Bearer \$TOKEN\" \
+                -H 'Content-Type: application/json' \
+                -d \"\$row\"; \
+                done"
+            """
 
             // bat '''
             // ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "TOKEN=$(curl -s -X POST http://localhost:8000/token/ -H \"Content-Type: application/json\" -d '{\"username\":\"trofel\",\"password\":\"Trofel.@#\"}' | jq -r .access) && echo Token OK && cat /home/ubuntu/aws_restitution/restt.json | jq -c '.[]' | while read row; do curl -s -X POST http://localhost:8000/api/restitutions/ -H \"Authorization: Bearer $TOKEN\" -H \"Content-Type: application/json\" -d \"$row\"; done"
