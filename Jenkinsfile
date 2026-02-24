@@ -1,5 +1,7 @@
 node {
 
+    def SERVER = "ubuntu@13.48.104.63"
+
     stage('Clone') {   
         checkout scm 
         bat 'dir' 
@@ -77,6 +79,22 @@ node {
                     """
     }
 
+    stage('Prepare EC2') {
+        sshagent(['ec2-ssh']) {
+
+            sh """
+            ssh -o StrictHostKeyChecking=no ${SERVER} '
+            mkdir -p /home/ubuntu/aws_restitution
+            '
+            """
+
+            sh """
+            scp -o StrictHostKeyChecking=no aws_restt/docker-compose.yml \
+            ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
+            """
+        }
+    }
+
     stage('Push Images') {
         withCredentials([usernamePassword(
             credentialsId: 'gitlab-registry2',
@@ -101,4 +119,19 @@ node {
             """
         }
     }
+
+    stage('Init Prod') {
+        sleep 50
+        sleep 50
+
+        sshagent(['ec2-ssh']) {
+            sh """
+            ssh ${SERVER} '
+            cd /home/ubuntu/aws_restitution &&
+            docker exec restt-backend python manage.py init_prod
+            '
+            """
+        }
+    }
+
 }
