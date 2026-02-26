@@ -8,8 +8,8 @@ node {
     } 
 
     stage('Build') {  
-        bat 'docker compose down -v'
-        withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY')]) {
+        withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY'), string(credentialsId: 'REACT_APP_API_TOKEN', variable: 'REACT_APP_API_TOKEN')]) {
+            bat 'docker compose down -v'
             bat 'docker compose up -d --build'
         }     
         sleep 40
@@ -88,6 +88,10 @@ node {
 
             bat """
             scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
+            """ 
+
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/home/ubuntu/aws_restitution/nginx/conf/nginx.conf
             """ 
 
             bat """
