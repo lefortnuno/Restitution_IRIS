@@ -83,8 +83,8 @@ services:
         - "80:80"
         - "443:443"
       volumes:
-        - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf:ro,Z
-        - ./nginx/certs:/etc/nginx/certs:ro,Z
+        - ./nginx/conf/nginx.conf:/aws_restitution/nginx/nginx.conf:ro,Z
+        - ./nginx/certs:/aws_restitution/nginx/certs:ro,Z
       depends_on:
         - frontendd
         - backendd 
