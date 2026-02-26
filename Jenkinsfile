@@ -10,8 +10,9 @@ node {
     stage('Build') {  
         withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY'), string(credentialsId: 'REACT_APP_API_TOKEN', variable: 'REACT_APP_API_TOKEN')]) {
             bat 'docker compose down -v' 
-            // bat 'docker compose up -d --build'
-            bat 'docker compose up -d --build --no-cache'
+            bat 'docker compose build --no-cache' 
+            bat 'docker compose up -d' 
+            // bat 'docker compose up -d --build' 
         }     
         sleep 40
     }
