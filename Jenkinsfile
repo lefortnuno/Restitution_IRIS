@@ -110,10 +110,12 @@ node {
             bat "docker login registry.gitlab.com -u %REG_USER% -p %REG_PASS%"
                         
             bat "docker tag restt-backendd registry.gitlab.com/lefortnuno/restitution_iris/backend:latest || exit /b 1"
-            bat "docker tag restt-frontendd registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest || exit /b 1"
+            bat "docker tag restt-frontendd registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest || exit /b 1" 
+            bat "docker tag restt-nginx registry.gitlab.com/lefortnuno/restitution_iris/nginx:latest || exit /b 1"
 
             bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/backend:latest || exit /b 1"
             bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest || exit /b 1"
+            bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/nginx:latest || exit /b 1"
         }
     }
  
