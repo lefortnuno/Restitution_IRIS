@@ -22,4 +22,4 @@ bat 'docker exec restt-backendd-1 printenv GROQ_API_KEY'
 
 ###
 
-# Note : docker always runing
+# Note : docker always running
