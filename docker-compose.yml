@@ -75,6 +75,6 @@ services:
     ports:
       - "6379:6379"
     restart: always
-
+      
 volumes:
   postgres_data:

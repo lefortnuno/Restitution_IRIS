@@ -281,86 +281,57 @@ def adjust_result_by_affichage(resultats_op: list, affichage: str, champs_axes: 
                 "lon": coo["lon"]
             })
 
-        # --- 5. Calcul des proportions ---
-
-        # --- 5. Calcul des proportions ---
-        # max_val = max(all_values or [1])
-        # min_val = min(all_values or [1])
-        # mean_val = sum(all_values) / len(all_values) if all_values else 1
-        # std_val = np.std(all_values) if all_values else 1
-
-        # # Normalisation des valeurs pour gérer les différentes échelles
-        # if max_val > 0:
-        #     normalized_values = [v / max_val for v in all_values] if all_values else [1]
-        # else:
-        #     normalized_values = [1]
-
-        # # Calcul robuste des proportions
-        # if len(all_values) > 1:
-        #     # Échelle logarithmique pour gérer les grandes variations
-        #     if max_val >= 1000:
-        #         log_max = np.log1p(max_val)  # log(1 + max_val)
-        #         log_mean = np.log1p(mean_val)
-                
-        #         proportion1 = round((log_mean / log_max) * 10, 4)
-        #         proportion2 = round(np.sqrt(log_mean / log_max) * 8, 4)
-        #         proportion3 = round((log_mean / (log_max + 1)) * 6, 4)
-            
-        #     elif max_val >= 100:
-        #         # Échelle intermédiaire
-        #         scaled_max = max_val / 100
-        #         scaled_mean = mean_val / 100
-                
-        #         proportion1 = round((scaled_mean / scaled_max) * 15, 4)
-        #         proportion2 = round(np.sqrt(scaled_mean) * 10, 4)
-        #         proportion3 = round((scaled_mean / (scaled_max + 0.5)) * 8, 4)
-            
-        #     else:
-        #         # Échelle linéaire pour petites valeurs
-        #         range_val = max_val - min_val if max_val != min_val else 1
-                
-        #         proportion1 = round((mean_val / (max_val + 1)) * 20, 4)
-        #         proportion2 = round((std_val / (range_val + 1)) * 15, 4)
-        #         proportion3 = round((mean_val / (range_val + 1)) * 12, 4)
-
-        # else:
-        #     # Valeurs par défaut si une seule valeur
-        #     proportion1 = 10.0
-        #     proportion2 = 8.0
-        #     proportion3 = 6.0
-
-        # # Assurance que les proportions restent dans des limites raisonnables
-        # proportion1 = min(max(proportion1, 5), 50) 
-        # proportion2 = min(max(proportion2, 4), 40) 
-        # proportion3 = min(max(proportion3, 3), 30) 
-
+        # --- Calcul des stats ---
         max_val = max(all_values or [1])
+        min_val = min(all_values or [0])
         mean_val = sum(all_values) / len(all_values) if all_values else 1
         std_val = np.std(all_values) if all_values else 1
 
-        base = np.sqrt(mean_val + std_val)
-        proportion1 = round(((np.sqrt(max_val + std_val)) / (base + 1)), 4) * 10
-        proportion2 = np.sqrt(np.sqrt(mean_val))
-        proportion3 = np.sqrt(mean_val) / np.log(max_val + 1)  
-        
-        # if mean_val >= 1000: 
-        #     base = np.sqrt(mean_val + std_val)
-        #     proportion1 = round(((np.sqrt(max_val + std_val)) / (base + 1)), 4) * 10
-        #     proportion2 = np.sqrt(np.sqrt(mean_val))
-        #     proportion3 = np.sqrt(mean_val) / np.log(max_val + 1)   
-        # else:
-        #     base = mean_val + std_val
-        #     proportion1 = round(1 / ((np.sqrt(max_val + std_val)) * (np.sqrt(base) + 1)), 4)
-        #     proportion2 = round(1 / (np.sqrt(base)), 4)
-        #     proportion3 = round(1 / (np.sqrt(base) / np.log(max_val + 1)), 4)   
+
+        # --- Détermination dynamique du scale_factor ---
+        if mean_val > 100000:
+            scale_factor = 125
+        elif mean_val > 1000:
+            scale_factor = 90
+        elif mean_val > 100:
+            scale_factor = 40
+        elif mean_val > 50:
+            scale_factor = 10
+        else:
+            scale_factor = 1
+
+
+        # --- Cas petites valeurs (scaling proportionnel réel) ---
+        if mean_val <= 100:
+            normalized_max = max_val / max(max_val, 1)
+            normalized_mean = mean_val / max(max_val, 1)
+            normalized_std = std_val / max(max_val, 1)
+
+            proportion1 = round(normalized_max * scale_factor, 4)
+            proportion2 = round(normalized_mean * scale_factor, 4)
+            proportion3 = round((normalized_std + 0.1) * scale_factor, 4)
+
+        # --- Cas valeurs moyennes et grandes (scaling racine/log) ---
+        else:
+            range_val = max(max_val - min_val, 1)
+
+            proportion1 = round(
+                (np.sqrt(max_val - min_val + 1) / np.sqrt(range_val + 1)) * scale_factor,
+                4
+            )
+
+            proportion2 = round(np.sqrt(mean_val + std_val) * 2, 4)
+
+            proportion3 = round(np.log(max_val + 1) * 3, 4)
+
 
         resultats_final = {
             "labelsX": labelX_Final,
             "datasets": datasets,
             "proportion": [proportion1, proportion2, proportion3]
-        } 
+        }
 
-        return {"resultats_final": resultats_final}
+        return {"resultats_final": resultats_final} 
 
     # === Par défaut : renvoyer ''resultats_op'' ===
     return {"resultats_final": {"labelsX":[], "datasets":[]}}
