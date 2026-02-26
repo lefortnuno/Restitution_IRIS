@@ -1,9 +1,7 @@
 services:
   backendd:
     image: registry.gitlab.com/lefortnuno/restitution_iris/backend:latest
-    container_name: restt-backend
-    networks:
-      - app-network
+    container_name: restt-backend 
     command: >
       bash -c "
       python manage.py migrate &&
@@ -30,9 +28,7 @@ services:
 
   celery:
     image: registry.gitlab.com/lefortnuno/restitution_iris/backend:latest
-    container_name: restt-celery
-    networks:
-      - app-network
+    container_name: restt-celery 
     command: celery -A config worker -P solo -l info
     environment:
       DEBUG: "0"
@@ -52,18 +48,14 @@ services:
 
   frontendd:
     image: registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest
-    container_name: restt-frontend
-    networks:
-      - app-network
+    container_name: restt-frontend 
     ports:
       - "5173:80"
     restart: always
 
   dbb:
     image: postgres:15-alpine
-    container_name: restt-postgres
-    networks:
-      - app-network
+    container_name: restt-postgres 
     environment:
       POSTGRES_DB: "iris_restitution"
       POSTGRES_USER: "postgres"
@@ -74,9 +66,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: restt-redis
-    networks:
-      - app-network
+    container_name: restt-redis 
     restart: always
 
   nginx:
@@ -92,12 +82,6 @@ services:
         - frontendd
         - backendd 
       restart: unless-stopped
-      networks:
-        - app-network
-
-networks:
-  app-network:
-    driver: bridge
       
 volumes:
   postgres_data:

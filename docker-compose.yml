@@ -88,13 +88,7 @@ services:
       depends_on:
         - frontendd
         - backendd 
-      restart: unless-stopped
-      networks:
-        - app-network
-
-networks:
-  app-network:
-    driver: bridge
+      restart: unless-stopped 
       
 volumes:
   postgres_data:
