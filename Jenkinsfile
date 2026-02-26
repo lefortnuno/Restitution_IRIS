@@ -9,9 +9,9 @@ node {
 
     stage('Build') {  
         withCredentials([string(credentialsId: 'GROQ_API_KEY', variable: 'GROQ_API_KEY'), string(credentialsId: 'REACT_APP_API_TOKEN', variable: 'REACT_APP_API_TOKEN')]) {
-            bat 'docker compose down -v'
-            bat 'docker compose build --no-cache'
-            bat 'docker compose up -d'
+            bat 'docker compose down -v' 
+            bat 'docker compose up -d --build'
+            // bat 'docker compose up -d --build --no-cache'
         }     
         sleep 40
     }
@@ -95,9 +95,9 @@ node {
             scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/home/ubuntu/aws_restitution/nginx/conf/nginx.conf 
             """ 
             
-            bat """
-            sudo scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/etc/nginx/conf/nginx.conf 
-            """ 
+            // bat """
+            // sudo scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/etc/nginx/conf/nginx.conf 
+            // """ 
 
             bat """
             scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
