@@ -12,9 +12,9 @@ node {
 
             bat 'type restitution_ui\\.env' 
             bat 'docker compose down -v' 
-            bat 'docker compose build --no-cache' 
-            bat 'docker compose up -d' 
-            // bat 'docker compose up -d --build' 
+            // bat 'docker compose build --no-cache' 
+            // bat 'docker compose up -d' 
+            bat 'docker compose up -d --build' 
         }     
         sleep 40
     }
@@ -140,7 +140,7 @@ node {
     }
 
     stage('Init Prod') {
-        sleep 60
+        sleep 80
 
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {  
             bat """
