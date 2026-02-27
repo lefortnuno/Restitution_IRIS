@@ -12,9 +12,9 @@ node {
 
             bat 'type restitution_ui\\.env' 
             bat 'docker compose down -v' 
-            // bat 'docker compose build --no-cache' 
-            // bat 'docker compose up -d' 
-            bat 'docker compose up -d --build' 
+            bat 'docker compose build --no-cache' 
+            bat 'docker compose up -d' 
+            // bat 'docker compose up -d --build' 
         }     
         sleep 40
     }
