@@ -140,7 +140,7 @@ node {
     }
 
     stage('Init Prod') {
-        sleep 30
+        sleep 60
 
         withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {  
             bat """

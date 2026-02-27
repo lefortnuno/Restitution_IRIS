@@ -54,7 +54,7 @@ services:
     ports:
       - "5173:80"
     environment:
-      - REACT_APP_API_BASE_URL=https://16.16.185.140:8000/api/
+      - REACT_APP_API_BASE_URL=https://16.16.185.140/backend/
       - REACT_APP_API_TOKEN=${REACT_APP_API_TOKEN}
     restart: always
 
