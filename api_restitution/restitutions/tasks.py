@@ -89,6 +89,7 @@ def lancer_traitement_restitution(restitution_id):
     restitution = Restitutions.objects.get(id=restitution_id)  
 
     affichage = restitution.affichages.first() 
+    llmmodele = restitution.llmmodeles.first() 
     champs = restitution.champs.all().order_by("id")
     formats = restitution.formats_selected.all().order_by("id")
     jointures = restitution.jointures.all().order_by("id")
@@ -107,6 +108,7 @@ def lancer_traitement_restitution(restitution_id):
                 return obj
      
     affichage_data = affichage.nom_affichage if affichage else None 
+    llmmodele_data = llmmodele.libelle_llm if llmmodele else None 
     champs_data =  ChampsSerializer(champs, many=True).data 
     formats_data = FormatSerializer(formats, many=True).data
     jointures_data = JointuresSerializer(jointures, many=True).data
@@ -284,7 +286,9 @@ def lancer_traitement_restitution(restitution_id):
 
     # APPEL AU LLM OLLAMA 3:8b 
     res_llm_id = 0
-    var_llm = True
+    var_llm = restitution.status_llm
+    print("[--] var_llm = ", var_llm)
+    print("[--] status_llm = ", restitution.status_llm)
     if var_llm is True:
         entrepot_de_donnee = req_data["api_data"]
         resultat_calcul = resultats_final["resultats_final"] 
@@ -301,6 +305,7 @@ def lancer_traitement_restitution(restitution_id):
 
         title = restitution.nom or "Restitution sans nom"
         affichage = affichage_data 
+        llmmodele = llmmodele_data or "qwen/qwen3-32b"
         description = restitution.description or "Aucune description disponible"
         
         filtres =  ""
@@ -337,18 +342,19 @@ def lancer_traitement_restitution(restitution_id):
             "schema": schema,
             "calculStat": calculStat,
             "title": title,
-            "affichage": affichage,
+            "affichage": affichage, 
             "filtres": filtres,
             "description": description,
             "prompte_systeme": prompte_systeme,
             # "model": "llama-3.3-70b-versatile"
-            "model": "qwen/qwen3-32b"
+            # "model": "qwen/qwen3-32b"
+            "model": llmmodele
         }
         task_llm = lancer_llm_async.delay(payload)
         res_llm_id = task_llm.id
         print(f"\n\n[ --- ] TaskId: {res_llm_id} \n\n") 
-        
-     
+   
+   
     # ✅ Extraire les noms de champs à partir du premier élément 
     if affichage_data.strip().lower() in ["tableau croisée dynamique", "tableau simple"]:
         if resultats_final["resultats_final"]: 
@@ -369,6 +375,7 @@ def lancer_traitement_restitution(restitution_id):
             "id": restitution.id,
             "nom": restitution.nom,
             "affichage": affichage_data,
+            "llmmodele": llmmodele_data,
             "champs": champs_data,
             "liste_champs": list_champs_front,
             "resultats":  resultats_final["resultats_final"],

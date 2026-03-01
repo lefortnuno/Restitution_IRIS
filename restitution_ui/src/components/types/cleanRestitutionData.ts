@@ -26,6 +26,7 @@ export const removeIdsFromFormData = (
   const cleanedData: RestitutionFormDataType = {
     nom: data.nom,
     description: data.description,
+    status_llm: data.status_llm,
 
     formats_selected: data.formats_selected.map((format) => ({
       id_structure: format.id_structure,
@@ -49,6 +50,10 @@ export const removeIdsFromFormData = (
 
     affichages: data.affichages.map((affichage) => ({
       nom_affichage: affichage.nom_affichage,
+    })) as any,
+    
+    llmmodeles: data.llmmodeles.map((llmmodele) => ({
+      llmmodele: llmmodele.libelle_llm,
     })) as any,
 
     operation_selected: data.operation_selected.map((operation) => ({

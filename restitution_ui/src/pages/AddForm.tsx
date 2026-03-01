@@ -36,6 +36,8 @@ import { createRestitution } from "@/components/queries/useCRURestitution";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LlmmodeleSelector from "@/context/llmmodeles/Llmmodele";
+import BooleanField from "@/context/texts/BooleanField";
 
 export default function AddForm() {
   const [completOP, setCompletOP] = useState<boolean>(false);
@@ -79,6 +81,7 @@ export default function AddForm() {
   const mutation = useMutation({
     mutationFn: createRestitution,
     onSuccess: (data) => {
+      // console.log("data ========== ", data);
       toast.success("Restitution créée avec succès :", data.as_nom);
       navigate("/");
       methods.reset();
@@ -86,7 +89,7 @@ export default function AddForm() {
     onError: (error) => {
       toast.error("Erreur lors de la création :");
     },
-  }); 
+  });
 
   useEffect(() => {
     if (completOP) {
@@ -116,7 +119,7 @@ export default function AddForm() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    const rawData = methods.getValues(); 
+                    const rawData = methods.getValues();
 
                     // Vérification manuelle des prérequis
                     let hasError = false;
@@ -148,6 +151,14 @@ export default function AddForm() {
                       hasError = true;
                     }
 
+                    if (!rawData.affichages || rawData.affichages.length < 1) {
+                      methods.setError("llmmodeles", {
+                        type: "manual",
+                        message: "Le modèle d'IA doit être choisi obligatoirement",
+                      });
+                      hasError = true;
+                    }
+
                     if (
                       !rawData.operation_selected ||
                       rawData.operation_selected.length < 1
@@ -158,7 +169,7 @@ export default function AddForm() {
                       });
                       hasError = true;
                     }
-                    
+
                     // Stop si au moins une erreur
                     if (hasError) return;
 
@@ -282,6 +293,23 @@ export default function AddForm() {
                   )}
 
                   <hr className="my-6 border-dashed border-gray-400" />
+
+                  <div className="my-4 border-t-4 border-teal-700 rounded-t-md px-2 py-1 bg-teal-700 text-white font-semibold">
+                    Intelligence Artificielle
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <LlmmodeleSelector
+                      name="llmmodeles"
+                      placeholder="Ex: qwen"
+                      error={errors.llmmodeles?.message}
+                    />
+
+                    <BooleanField
+                      name="status_llm"
+                      label="Activé/Désactivé"
+                      placeholder="..."
+                    />
+                  </div>
 
                   <TextAreaField
                     name="description"

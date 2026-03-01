@@ -7,4 +7,4 @@ COPY conf/nginx.conf /etc/nginx/nginx.conf
 # COPY certs /etc/nginx/certs
 
 # Expose ports
-EXPOSE 8083 443
+EXPOSE 80 443

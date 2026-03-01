@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Restitutions, Formats, Jointures, Filtre_populations, Affichages, Operations, Conditions, Champs 
+from .models import Restitutions, Formats, Jointures, Filtre_populations, Affichages, LLMModeles, Operations, Conditions, Champs 
 
 class RestitutionAdmin(admin.ModelAdmin):
     list_display = [field.name for field in Restitutions._meta.fields]
@@ -15,6 +15,9 @@ class FiltrePopulationsAdmin (admin.ModelAdmin):
     
 class AffichagesAdmin (admin.ModelAdmin):
     list_display = [field.name for field in Affichages._meta.fields]
+
+class LlmmodelesAdmin (admin.ModelAdmin):
+    list_display = [field.name for field in LLMModeles._meta.fields]
     
 class OperationsAdmin (admin.ModelAdmin):
     list_display = [field.name for field in Operations._meta.fields]
@@ -31,6 +34,7 @@ admin.site.register(Formats, CodeFormatAdmin)
 admin.site.register(Jointures, JointuresAdmin)
 admin.site.register(Filtre_populations, FiltrePopulationsAdmin)
 admin.site.register(Affichages, AffichagesAdmin)
+admin.site.register(LLMModeles, LlmmodelesAdmin)
 admin.site.register(Operations, OperationsAdmin)
 admin.site.register(Conditions, ConditionOperationAdmin)
 admin.site.register(Champs, ChampsAdmin)

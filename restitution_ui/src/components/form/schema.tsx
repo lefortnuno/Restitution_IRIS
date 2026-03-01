@@ -8,10 +8,10 @@ export const expressionSchema = z.array(
       .array(
         z.object({
           champs_cible: z.string().nullable(),
-        })
+        }),
       )
       .optional(),
-  })
+  }),
 );
 
 export const restitutionFormSchema = z.object({
@@ -33,7 +33,7 @@ export const restitutionFormSchema = z.object({
           format: z.string(),
           attribut: z.string(),
         }),
-      })
+      }),
     )
     .optional(),
 
@@ -44,13 +44,17 @@ export const restitutionFormSchema = z.object({
         operateur_comparaison: z.string(),
         parametre: z.union([z.string(), z.number()]),
         operateur_logique: z.enum(["ET", "OU"]).nullable(),
-      })
+      }),
     )
     .optional(),
 
   affichages: z
     .array(z.object({ nom_affichage: z.string() }))
     .min(1, "L'affichage doit être choisi obligatoirement"),
+
+  llmmodeles: z
+    .array(z.object({ libelle_llm: z.string() }))
+    .min(1, "Le modele d'IA doit être choisi obligatoirement"),
 
   operation_selected: z
     .array(
@@ -67,7 +71,7 @@ export const restitutionFormSchema = z.object({
                 .nullable(),
               valeur_reference: expressionSchema,
               operateur_logique: z.enum(["OU", "ET"]).nullable(),
-            })
+            }),
           )
           .nullable(),
 
@@ -77,10 +81,10 @@ export const restitutionFormSchema = z.object({
           .array(
             z.object({
               champs_cible: z.string().nullable(),
-            })
+            }),
           )
           .optional(),
-      })
+      }),
     )
     .min(1, "Effectuer au moins une opération"),
 
@@ -117,11 +121,12 @@ export const restitutionFormSchema = z.object({
             separateur: z.string().nullable(),
           })
           .nullable(),
-      })
+      }),
     )
     .optional(),
 
   description: z.string().nullable(),
+  status_llm: z.boolean().nullable(),
 });
 
 export type RestitutionFormDataType = z.infer<typeof restitutionFormSchema>;
@@ -132,7 +137,9 @@ export const defaultRestitution: RestitutionFormDataType = {
   jointures: [],
   filtres_pop: [],
   affichages: [],
+  llmmodeles: [],
   operation_selected: [],
   champs: [],
   description: "",
+  status_llm: true,
 };

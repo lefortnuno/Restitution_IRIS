@@ -26,6 +26,7 @@ class Restitutions(models.Model):
 
     nom = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    status_llm = models.BooleanField(default=True) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="restitutions_crees")
@@ -98,6 +99,21 @@ class Affichages(models.Model):
     def __str__(self):
         return self.nom_affichage
 
+
+class LLMModeles(models.Model):
+    """
+    Modèle représentant un le modele de llm a utiliser dans une restitution.
+
+    Champs :
+        - restitution (ForeignKey) : Restitution associée.
+        - libelle_llm (CharField, optionnel) : Nom du modele.
+    """
+
+    restitution = models.ForeignKey(Restitutions, on_delete=models.CASCADE, related_name="llmmodeles", null=True)
+    libelle_llm = models.CharField(max_length=255, null=True) 
+
+    def __str__(self):
+        return self.libelle_llm
 
 class Filtre_populations(models.Model):
     """

@@ -9,7 +9,8 @@ load_dotenv()
  
 # GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-GROQ_MODEL_LLAMA70B = "qwen/qwen3-32b"
+# GROQ_MODEL_LLAMA70B = "qwen/qwen3-32b"
+GROQ_MODEL_LLAMA70B = "llama-3.3-70b-versatile"
 
 client = Groq(api_key=GROQ_API_KEY)
 
@@ -207,6 +208,7 @@ def _appel_groq(
 
     texte = completion.choices[0].message.content.strip()
 
+    print("[-LLAMA 1-] modele = ", modele)
     print(f"✅ Groq OK ({modele})")
 
     if not expect_json:
@@ -222,6 +224,7 @@ def _appel_groq(
 
 def obtenir_reponse_llama_groq1(prompt_systeme, prompt_utilisateur, modele, timerequest):
 
+    print("[-LLAMA 2-] modele = ", modele)
     if modele in ("llama70", "llama-70b"):
         modele = GROQ_MODEL_LLAMA70B
 

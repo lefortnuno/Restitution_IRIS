@@ -6,12 +6,16 @@ export const fetcher = async <T>(url: string): Promise<T> => {
 };
 
 export const createRestitution = async (data: any) => {
+  console.log("DATAAAAAA DUPLLLLL=== ", data);
+
   const response = await axiosInstance.post("restitutions/", data);
   return response.data;
 };
 
 export const getRestitutionID = async (id: number) => {
-  const response = await axiosInstance.get(`restitutions/parametrage/${id}/get_full_data/`);
+  const response = await axiosInstance.get(
+    `restitutions/parametrage/${id}/get_full_data/`,
+  );
   return response.data;
 };
 

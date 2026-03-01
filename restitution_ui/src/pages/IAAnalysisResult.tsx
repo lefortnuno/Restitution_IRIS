@@ -3,11 +3,13 @@ import { checkTaskLLMStatus } from "@/components/queries/useVisualisation";
 
 interface IAAnalysisResultProps {
   llmTaskId: string;
+  llmmodele: string;
   exportMode?: boolean;
 }
 
 export default function IAAnalysisResult({
   llmTaskId,
+  llmmodele,
   exportMode,
 }: IAAnalysisResultProps) {
   const [loading, setLoading] = useState(true);
@@ -60,8 +62,13 @@ export default function IAAnalysisResult({
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-blue-600 animate-pulse">
+      <div className="p-8 text-center">
         L'analyse IA est en cours, merci de patienter…
+        <div className="flex justify-center items-center p-8">
+          <div className="w-48 h-1 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-teal-400 rounded-full animate-[loading_1.5s_ease-in-out_infinite]" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -77,19 +84,6 @@ export default function IAAnalysisResult({
   if (status === "SUCCESS" && result) {
     return (
       <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200 space-y-4">
-        {/* <h2 className="text-2xl font-bold text-gray-800">{result.titre_analyse ?? "Analyse IA"}</h2> */}
-
-        {/* {result.tendances_cles && result.tendances_cles.length > 0 && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700">Tendances clés:</h3>
-            <ul className="list-disc list-inside text-gray-600">
-              {result.tendances_cles.map((t: string, i: number) => (
-                <li key={i}>{t}</li>
-              ))}
-            </ul>
-          </div>
-        )} */}
-
         {result.anomalies_possibles &&
           result.anomalies_possibles.length > 0 && (
             <div className="bg-red-100 p-6">
@@ -104,20 +98,9 @@ export default function IAAnalysisResult({
             </div>
           )}
 
-        {/* {result.resume_executif && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700">Résumé exécutif:</h3>
-            <p className="text-gray-600">{result.resume_executif}</p>
-          </div>
-        )} */}
-
-        {/* {result.ton_analyse_personnel && (
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700">Recommandations personnelles:</h3>
-            <p className="text-gray-600">{result.ton_analyse_personnel}</p>
-          </div>
-        )} */}
-
+        <p className="text-sm text-end text-gray-500 italic">
+          Modèle IA : {llmmodele}
+        </p>
         {/* Affiche le texte brut si aucune clé structurée n'est présente */}
         {!result.tendances_cles &&
           !result.anomalies_possibles &&

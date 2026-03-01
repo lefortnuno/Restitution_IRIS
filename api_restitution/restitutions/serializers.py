@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.db import transaction
 from customUsers.serializers import SimpleUserSerializer
 from .models import (
-    Clause_regroupement, Restitutions, Formats, Jointures, Affichages,
+    Clause_regroupement, LLMModeles, Restitutions, Formats, Jointures, Affichages,
     Filtre_populations, Operations, Conditions, Champs, Expressions
 )
 from restitutions.functions.miseajour import (
@@ -47,6 +47,16 @@ class AffichagesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Affichages
+        exclude = ['restitution']
+
+class LLMModelesSerializer(serializers.ModelSerializer):
+    """
+    Sérialiseur pour le modèle LLMModeles.
+    """
+    id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = LLMModeles
         exclude = ['restitution']
 
 
@@ -219,6 +229,7 @@ class RestitutionsSerializer(serializers.ModelSerializer):
     formats_selected  = FormatSerializer(many=True)
     jointures = JointuresSerializer(many=True, required=False)
     affichages = AffichagesSerializer(many=True)
+    llmmodeles = LLMModelesSerializer(many=True)
     filtres_pop = FiltrePopulationsSerializer(many=True, required=False)
     operation_selected  = OperationsSerializer(many=True)
     champs = ChampsSerializer(many=True, required=False) 
@@ -248,6 +259,7 @@ class RestitutionsSerializer(serializers.ModelSerializer):
         formats_data = validated_data.pop('formats_selected', [])
         jointures_data = validated_data.pop('jointures', [])
         affichages_data = validated_data.pop("affichages", [])
+        llmmodeles_data = validated_data.pop("llmmodeles", [])
         filtres_data = validated_data.pop("filtres_pop", [])
         operations_data = validated_data.pop("operation_selected", []) 
         champs_data = validated_data.pop("champs", []) 
@@ -270,6 +282,7 @@ class RestitutionsSerializer(serializers.ModelSerializer):
             update_related_instances(formats_data, Formats, instance)
             update_related_instances(jointures_data, Jointures, instance)
             update_related_instances(affichages_data, Affichages, instance)
+            update_related_instances(llmmodeles_data, LLMModeles, instance)
             
             # Mise à jour des filtres avec chaînage
             previous_instance = None
@@ -419,6 +432,7 @@ class RestitutionsSerializer(serializers.ModelSerializer):
         formats_data = validated_data.pop('formats_selected', [])
         jointures_data = validated_data.pop('jointures', [])
         affichages_data = validated_data.pop("affichages", [])
+        llmmodeles_data = validated_data.pop("llmmodeles", [])
         filtres_data = validated_data.pop("filtres_pop", [])
         operations_data = validated_data.pop("operation_selected", [])
         champs_data = validated_data.pop("champs", []) 
@@ -429,6 +443,7 @@ class RestitutionsSerializer(serializers.ModelSerializer):
             create_instance(formats_data, Formats, restitution)
             create_instance(jointures_data, Jointures, restitution)
             create_instance(affichages_data, Affichages, restitution)
+            create_instance(llmmodeles_data, LLMModeles, restitution)
             create_instance(filtres_data, Filtre_populations, restitution)
             
             for champ_data in champs_data:

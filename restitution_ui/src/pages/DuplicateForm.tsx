@@ -40,6 +40,8 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { removeIdsFromFormData } from "@/components/types/cleanRestitutionData";
+import BooleanField from "@/context/texts/BooleanField";
+import LlmmodeleSelector from "@/context/llmmodeles/Llmmodele";
 
 export default function DuplicateForm() {
   const [completOP, setCompletOP] = useState<boolean>(false);
@@ -64,10 +66,12 @@ export default function DuplicateForm() {
     if (data) {
       const formattedData: RestitutionFormDataType = {
         nom: data.nom ?? "",
+        status_llm: data.status_llm ?? true,
         formats_selected: data.formats_selected ?? [],
         jointures: data.jointures ?? [],
         filtres_pop: data.filtres_pop ?? [],
         affichages: data.affichages ?? [],
+        llmmodeles: data.llmmodeles ?? [],
         operation_selected: data.operation_selected ?? [],
         champs: data.champs ?? [],
         description: data.description ?? "",
@@ -192,7 +196,7 @@ export default function DuplicateForm() {
                       });
                       hasError = true;
                     }
-                    
+
                     // Stop si au moins une erreur
                     if (hasError) return;
 
@@ -317,6 +321,23 @@ export default function DuplicateForm() {
 
                   <hr className="my-6 border-dashed border-gray-400" />
 
+                  <div className="my-4 border-t-4 border-teal-700 rounded-t-md px-2 py-1 bg-teal-700 text-white font-semibold">
+                    Intelligence Artificielle
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <LlmmodeleSelector
+                      name="llmmodeles"
+                      placeholder="Ex: qwen"
+                      error={errors.llmmodeles?.message}
+                    />
+
+                    <BooleanField
+                      name="status_llm"
+                      label="Activé/Désactivé"
+                      placeholder="..."
+                    />
+                  </div>
+                  
                   <TextAreaField
                     name="description"
                     label="Description"

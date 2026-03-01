@@ -12,6 +12,11 @@
         "nom_affichage": "Diagramme circulaire"
       }
     ],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
+      }
+    ],
     "filtres_pop": [],
     "operation_selected": [
       {
@@ -73,12 +78,18 @@
       }
     ],
     "nom": "Moyenne Global Montant Impayé par Flag",
-    "description": ""
+    "description": "",
+    "status_llm": true
   },
   {
     "formats_selected": [{ "id_structure": 6, "name_structure": "GARANTIES" }],
     "jointures": [],
     "affichages": [{ "nom_affichage": "Tableau croisée dynamique" }],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
+      }
+    ],
     "filtres_pop": [],
     "operation_selected": [
       {
@@ -146,12 +157,18 @@
       }
     ],
     "nom": "Montant Couverture par type et Code de Garantie",
-    "description": ""
+    "description": "",
+    "status_llm": true
   },
   {
     "formats_selected": [{ "id_structure": 7, "name_structure": "AGIOS" }],
     "jointures": [],
     "affichages": [{ "nom_affichage": "Graphique linéaire" }],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
+      }
+    ],
     "filtres_pop": [],
     "operation_selected": [
       {
@@ -233,12 +250,18 @@
       }
     ],
     "nom": "Evolution Taux Interet Annuel des Clients",
-    "description": ""
+    "description": "",
+    "status_llm": true
   },
   {
     "formats_selected": [{ "id_structure": 7, "name_structure": "AGIOS" }],
     "jointures": [],
     "affichages": [{ "nom_affichage": "Graphique en barres" }],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
+      }
+    ],
     "filtres_pop": [],
     "operation_selected": [
       {
@@ -320,7 +343,8 @@
       }
     ],
     "nom": "Evolution Taux Interet Annuel des Clients",
-    "description": ""
+    "description": "",
+    "status_llm": true
   },
   {
     "formats_selected": [
@@ -328,6 +352,11 @@
     ],
     "jointures": [],
     "affichages": [{ "nom_affichage": "Cartographie circulaires" }],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
+      }
+    ],
     "filtres_pop": [],
     "operation_selected": [
       {
@@ -419,7 +448,8 @@
       }
     ],
     "nom": "Stat Env",
-    "description": "Moyenne des ventes par pays et par compte"
+    "description": "Moyenne des ventes par pays et par compte",
+    "status_llm": true
   },
   {
     "formats_selected": [
@@ -432,6 +462,11 @@
     "affichages": [
       {
         "nom_affichage": "Histogramme"
+      }
+    ],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
       }
     ],
     "filtres_pop": [],
@@ -501,7 +536,8 @@
       }
     ],
     "nom": "Montant Couverture par Code de Garantie",
-    "description": ""
+    "description": "",
+    "status_llm": true
   },
   {
     "formats_selected": [
@@ -514,6 +550,11 @@
     "affichages": [
       {
         "nom_affichage": "Histogramme"
+      }
+    ],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
       }
     ],
     "filtres_pop": [],
@@ -583,7 +624,8 @@
       }
     ],
     "nom": "Montant Couverture par date d'arret",
-    "description": ""
+    "description": "",
+    "status_llm": true
   },
   {
     "formats_selected": [
@@ -596,6 +638,11 @@
     "affichages": [
       {
         "nom_affichage": "Tableau simple"
+      }
+    ],
+    "llmmodeles": [
+      {
+        "libelle_llm": "qwen/qwen3-32b"
       }
     ],
     "filtres_pop": [],
@@ -685,6 +732,7 @@
       }
     ],
     "nom": "Affichage Basique",
-    "description": ""
+    "description": "",
+    "status_llm": true
   }
 ]

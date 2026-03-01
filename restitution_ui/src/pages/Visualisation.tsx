@@ -19,6 +19,7 @@ import HistogrammeComponent from "@/components/graphs/HistogrammeComponent";
 import DualMapsComponent from "@/components/graphs/DualMapsComponent";
 import { SortingState } from "@tanstack/react-table";
 import IAAnalysisResult from "./IAAnalysisResult";
+import { ErrorState } from "./ErrorState";
 
 defaults.maintainAspectRatio = false;
 defaults.responsive = true;
@@ -146,7 +147,7 @@ export default function Visualisation() {
   // 🔄 Rendu dynamique selon le type d'affichage
   const renderComponent = () => {
     const ia = result?.llm_generative_task_id ? (
-      <IAAnalysisResult llmTaskId={result.llm_generative_task_id} exportMode />
+      <IAAnalysisResult llmTaskId={result.llm_generative_task_id} llmmodele={result.llmmodele} exportMode />
     ) : null;
 
     switch (result?.affichage) {
@@ -289,8 +290,25 @@ export default function Visualisation() {
           <Url />
 
           <div className="py-2">
-            {loading && <p className="p-8 text-center">Chargement en cours…</p>}
-            {error && <p className="text-red-500 text-center p-8">{error}</p>}
+            {loading && (
+              <div className="flex justify-center items-center p-8">
+                <div className="w-48 h-1 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-teal-400 rounded-full animate-[loading_1.5s_ease-in-out_infinite]" />
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <ErrorState
+                error={error}
+                onRetry={() => {
+                  setError("");
+                  setLoading(true);
+                  setResult(null);
+                  launch.mutate();
+                }}
+              />
+            )}
 
             {result && (
               <>
@@ -301,14 +319,26 @@ export default function Visualisation() {
                 </pre> */}
 
                 <br />
-                {result?.llm_generative_task_id &&
+                {result?.llm_generative_task_id !== undefined &&
+                  result?.llm_generative_task_id !== 0 &&
                   (result?.affichage === "Tableau croisée dynamique" ||
                     result?.affichage === "Tableau simple") && (
                     <IAAnalysisResult
                       llmTaskId={result.llm_generative_task_id}
+                      llmmodele={result.llmmodele}
                       exportMode
                     />
                   )}
+
+                {result?.llm_generative_task_id === 0 && (
+                  <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200 space-y-4">
+                    <div className="bg-red-100 p-6">
+                      <p className="text-sm text-gray-500 italic">
+                        Modèle analyse IA désactivé
+                      </p>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>

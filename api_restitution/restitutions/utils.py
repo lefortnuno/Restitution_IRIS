@@ -8,6 +8,7 @@ def preparer_restitution_calculée(restitution: Restitutions) -> dict:
     """
 
     affichage = restitution.affichages.first()
+    llmmodele = restitution.llmmodeles.first()
     champs = restitution.champs.all()
     formats = restitution.formats_selected.all()
     jointures = restitution.jointures.all()
@@ -17,6 +18,7 @@ def preparer_restitution_calculée(restitution: Restitutions) -> dict:
     # Exemple de structure retournée
     return {
         "affichage": affichage.nom_affichage if affichage else None, 
+        "llmmodele": llmmodele.libelle_llm if llmmodele else None, 
         "champs": ChampsSerializer(champs, many=True).data,
         "formats": FormatSerializer(formats, many=True).data,
         "jointures": JointuresSerializer(jointures, many=True).data,
