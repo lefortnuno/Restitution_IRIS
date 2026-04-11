@@ -16,10 +16,9 @@ import {
   Option,
   affichageOptions,
 } from "@/context/llmmodeles/llmmodeleType";
-import { ChampsAVC } from "@/context/champs/champType";
 
 export default function LlmmodeleSelector({ name, placeholder, error }: Props) {
-  const { control, getValues, setValue } = useFormContext();
+  const { control, setValue } = useFormContext();
   const [search, setSearch] = useState("");
   const [isFocused, setIsFocused] = useState(false);
 
@@ -38,12 +37,6 @@ export default function LlmmodeleSelector({ name, placeholder, error }: Props) {
     const newValue = [{ libelle_llm: format.label }];
     onChange(newValue); // ✅ déclare la valeur à RHF
     setValue("llmmodeles", newValue); // garde ta logique actuelle
-
-    const currentChamps = getValues("champs") || [];
-    const filteredChamps = currentChamps.filter((champ: ChampsAVC) =>
-      champ.transformation?.type?.startsWith("op_")
-    );
-    setValue("champs", filteredChamps);
     setIsFocused(false);
   };
 

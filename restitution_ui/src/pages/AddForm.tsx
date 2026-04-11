@@ -151,7 +151,7 @@ export default function AddForm() {
                       hasError = true;
                     }
 
-                    if (!rawData.affichages || rawData.affichages.length < 1) {
+                    if (!rawData.llmmodeles || rawData.llmmodeles.length < 1) {
                       methods.setError("llmmodeles", {
                         type: "manual",
                         message: "Le modèle d'IA doit être choisi obligatoirement",
