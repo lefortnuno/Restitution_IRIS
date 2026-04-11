@@ -156,7 +156,8 @@ def lancer_traitement_restitution(restitution_id):
 
     # print(f"\n\n[ --- ] req_data = {req_data}\n\n")
 
-    requete_sql = req_data["requete_sql"]
+    requete_sql = req_data["requete_sql"] 
+    print("\n\n[- TASK -] requete_sql", requete_sql)
     api_data = req_data["api_data"]
     api_data_original = api_data    
      

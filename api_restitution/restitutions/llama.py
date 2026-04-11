@@ -200,7 +200,7 @@ def _appel_groq(
             {"role": "system", "content": prompt_systeme},
             {"role": "user", "content": prompt_utilisateur}
         ],
-        temperature=0,
+        temperature=0.1,
         max_completion_tokens=1024,
         top_p=1,
         stream=False
@@ -256,7 +256,7 @@ def obtenir_reponse_llama_groq1(prompt_systeme, prompt_utilisateur, modele, time
                 },
                 {"role": "user", "content": prompt_utilisateur}
             ],
-            temperature=0,
+            temperature=0.1,
             max_completion_tokens=1024,
             top_p=1,
             stream=False
