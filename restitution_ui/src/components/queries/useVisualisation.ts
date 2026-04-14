@@ -35,3 +35,11 @@ export const checkTaskLLMStatus = async (taskId: string) => {
   );
   return res.data;
 };
+
+export const relancerLLM = async (restitutionId: number, taskId: string) => {
+  const res = await axiosInstance.post(
+    `restitutions/${restitutionId}/relancer_llm/`,
+    { task_id: taskId }
+  );
+  return res.data;
+};

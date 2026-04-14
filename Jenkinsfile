@@ -1,6 +1,6 @@
 node {
 
-    def SERVER = "ubuntu@56.228.8.77"
+    def SERVER = "ubuntu@13.53.37.13"
 
     stage('Clone') {   
         checkout scm 

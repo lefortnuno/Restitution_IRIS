@@ -148,7 +148,13 @@ export default function Visualisation() {
   // 🔄 Rendu dynamique selon le type d'affichage
   const renderComponent = () => {
     const ia = result?.llm_generative_task_id ? (
-      <IAAnalysisResult llmTaskId={result.llm_generative_task_id} llmmodele={result.llmmodele} exportMode />
+      <IAAnalysisResult
+        llmTaskId={result.llm_generative_task_id}
+        llmmodele={result.llmmodele}
+        restitutionId={Number(restitutionId)}
+        restitutionTaskId={restitutionTaskID}
+        exportMode
+      />
     ) : null;
 
     switch (result?.affichage) {
@@ -310,6 +316,8 @@ export default function Visualisation() {
                     <IAAnalysisResult
                       llmTaskId={result.llm_generative_task_id}
                       llmmodele={result.llmmodele}
+                      restitutionId={Number(restitutionId)}
+                      restitutionTaskId={restitutionTaskID}
                       exportMode
                     />
                   )}

@@ -337,13 +337,13 @@ def lancer_traitement_restitution(restitution_id):
         """ 
 
 
-        payload = {
+        llm_payload = {
             "entrepot_de_donnee": entrepot_de_donnee,
             "resultat_calcul": resultat_calcul,
             "schema": schema,
             "calculStat": calculStat,
             "title": title,
-            "affichage": affichage, 
+            "affichage": affichage,
             "filtres": filtres,
             "description": description,
             "prompte_systeme": prompte_systeme,
@@ -351,9 +351,9 @@ def lancer_traitement_restitution(restitution_id):
             # "model": "qwen/qwen3-32b"
             "model": llmmodele
         }
-        task_llm = lancer_llm_async.delay(payload)
+        task_llm = lancer_llm_async.delay(llm_payload)
         res_llm_id = task_llm.id
-        print(f"\n\n[ --- ] TaskId: {res_llm_id} \n\n") 
+        print(f"\n\n[ --- ] TaskId: {res_llm_id} \n\n")
    
    
     # ✅ Extraire les noms de champs à partir du premier élément 
@@ -380,7 +380,8 @@ def lancer_traitement_restitution(restitution_id):
             "champs": champs_data,
             "liste_champs": list_champs_front,
             "resultats":  resultats_final["resultats_final"],
-            "llm_generative_task_id": res_llm_id
+            "llm_generative_task_id": res_llm_id,
+            "llm_payload": llm_payload if var_llm is True else None
         }  
     return res_final
 

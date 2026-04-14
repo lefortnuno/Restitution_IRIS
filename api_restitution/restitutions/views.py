@@ -287,6 +287,39 @@ class RestitutionViewSet(viewsets.ModelViewSet):
             })
 
 
+    @action(detail=True, methods=['post'], url_path='relancer_llm')
+    def relancer_llm(self, request, pk=None):
+        """
+        Relance uniquement la tâche LLM à partir du payload stocké dans le résultat
+        de la tâche de traitement originale, sans recalculer les données.
+
+        :body task_id: ID de la tâche de traitement originale (lancer_traitement_restitution).
+        :return: ID de la nouvelle tâche LLM.
+        """
+        task_id = request.data.get('task_id')
+        if not task_id:
+            return Response({"error": "task_id requis"}, status=status.HTTP_400_BAD_REQUEST)
+
+        original_result = app.AsyncResult(task_id)
+        if not original_result.successful():
+            return Response(
+                {"error": "La tâche originale n'est pas terminée ou a échoué."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        result_data = original_result.result
+        llm_payload = result_data.get("llm_payload")
+
+        if not llm_payload:
+            return Response(
+                {"error": "Payload LLM non disponible pour cette tâche. Relancez le traitement complet."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        task_llm = lancer_llm_async.delay(llm_payload)
+        return Response({"llm_task_id": task_llm.id}, status=status.HTTP_200_OK)
+
+
     @action(detail=False, methods=['get'], url_path='check-llm-restitution-status/(?P<task_id>[^/.]+)')
     def check_traitement_restitution_llama(self, request, *args, **kwargs):
         """

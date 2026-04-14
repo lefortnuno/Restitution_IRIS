@@ -1,35 +1,44 @@
 import { useEffect, useState } from "react";
-import { checkTaskLLMStatus } from "@/components/queries/useVisualisation";
+import { checkTaskLLMStatus, relancerLLM } from "@/components/queries/useVisualisation";
+import { LoadingBar } from "@/components/ui/LoadingBar";
+import { RefreshCw } from "lucide-react";
 
 interface IAAnalysisResultProps {
   llmTaskId: string;
   llmmodele: string;
+  restitutionId: number;
+  restitutionTaskId: string;
   exportMode?: boolean;
 }
 
 export default function IAAnalysisResult({
   llmTaskId,
   llmmodele,
+  restitutionId,
+  restitutionTaskId,
   exportMode,
 }: IAAnalysisResultProps) {
+  const [currentTaskId, setCurrentTaskId] = useState(llmTaskId);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<"PENDING" | "SUCCESS" | "FAILURE">(
-    "PENDING",
-  );
+  const [status, setStatus] = useState<"PENDING" | "SUCCESS" | "FAILURE">("PENDING");
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
+  const [isRetrying, setIsRetrying] = useState(false);
   const now = new Date();
 
   useEffect(() => {
-    if (!llmTaskId) return;
+    if (!currentTaskId) return;
+
+    setLoading(true);
+    setStatus("PENDING");
+    setResult(null);
+    setError("");
 
     const interval = setInterval(async () => {
       try {
-        const res = await checkTaskLLMStatus(llmTaskId);
-        console.log("Polling LLM res === ", res);
+        const res = await checkTaskLLMStatus(currentTaskId);
 
         if (res.status === "SUCCESS") {
-          // Assurer que result est un objet JSON et non texte brut
           let finalResult = res.result?.res_llm ?? {};
           if (typeof finalResult === "string") {
             try {
@@ -58,103 +67,94 @@ export default function IAAnalysisResult({
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [llmTaskId]);
+  }, [currentTaskId]);
+
+  const handleRetry = async () => {
+    if (isRetrying) return;
+    setIsRetrying(true);
+    try {
+      const res = await relancerLLM(restitutionId, restitutionTaskId);
+      if (res.llm_task_id) {
+        setCurrentTaskId(res.llm_task_id);
+      } else {
+        setError(res.error ?? "Impossible de relancer l'analyse.");
+      }
+    } catch (e: any) {
+      setError("Erreur lors du relancement de l'analyse IA.");
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
+  const RetryButton = () => (
+    <button
+      onClick={handleRetry}
+      disabled={isRetrying}
+      className="inline-flex items-center gap-2 mt-3 px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
+    >
+      <RefreshCw className={`w-4 h-4 ${isRetrying ? "animate-spin" : ""}`} />
+      {isRetrying ? "Relancement…" : "Relancer l'analyse IA"}
+    </button>
+  );
 
   if (loading) {
     return (
-      <div className="p-8 text-center">
-        L'analyse IA est en cours, merci de patienter…
-        <div className="flex justify-center items-center p-8">
-          <div className="w-48 h-1 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-teal-400 rounded-full animate-[loading_1.5s_ease-in-out_infinite]" />
-          </div>
-        </div>
+      <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200">
+        <p className="text-center text-sm text-gray-500 mb-2">
+          L'analyse IA est en cours, merci de patienter…
+        </p>
+        <LoadingBar />
       </div>
     );
   }
 
   if (status === "FAILURE") {
     return (
-      <div className="p-8 text-center text-red-600 bg-red-100 rounded shadow">
-        ⚠️ {error}
+      <div className="p-6 bg-red-50 rounded-xl shadow border border-red-200 text-center">
+        <p className="text-red-600 font-medium">⚠️ {error}</p>
+        <RetryButton />
       </div>
     );
   }
 
   if (status === "SUCCESS" && result) {
+    const hasStructuredData = result.tendances_cles || result.anomalies_possibles;
+    const isEmptyResult =
+      !hasStructuredData &&
+      result.message &&
+      (result.message.includes("Aucun résultat") ||
+        result.message.includes("FAILED") ||
+        result.message.includes("ERROR"));
+
     return (
       <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200 space-y-4">
-        {result.anomalies_possibles &&
-          result.anomalies_possibles.length > 0 && (
-            <div className="bg-red-100 p-6">
-              <h3 className="text-lg font-semibold text-gray-700">
-                Anomalies possibles:
-              </h3>
-              <ul className="list-disc list-inside text-gray-600">
-                {result.anomalies_possibles.map((a: string, i: number) => (
-                  <li key={i}>{a}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-        <p className="text-sm text-end text-gray-500 italic">
-          Modèle IA : {llmmodele}
-        </p>
-        {/* Affiche le texte brut si aucune clé structurée n'est présente */}
-        {!result.tendances_cles &&
-          !result.anomalies_possibles &&
-          result.message && (
-            <pre className="p-4 bg-gray-100 rounded text-gray-700">
-              {result.message}
-            </pre>
-          )}
-      </div>
-    );
-  }
-
-  if (exportMode && status === "SUCCESS" && result) {
-    return (
-      <div className="w-[1200px] bg-white text-black p-8 font-sans">
-        {/* HEADER */}
-        <div className="flex justify-between items-center border-b pb-4 mb-6">
-          <img src="/ac2i.svg" alt="Logo société" className="h-12 w-12" />
-          <h1 className="text-xl font-semibold"> </h1>
-          <img src="/logo.svg" alt="Logo app" className="h-12 w-12" />
-        </div>
-
-        {/* CONTENT */}
-        <div className="min-h-[600px]"> </div>
-
-        {/* FOOTER */}
-        <div className="border-t mt-8 pt-4 text-xs text-gray-600 flex justify-between">
-          <span>
-            Généré le {now.toLocaleDateString()} à {now.toLocaleTimeString()}
-          </span>
-          <span>ac2i@ac2i.ma | +212 6 42 35 95 84</span>
-        </div>
-
-        <div className="mt-6">
-          <h2 className="font-semibold mb-2">Analyse IA</h2>
-
-          <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200 space-y-4">
-            {result.anomalies_possibles &&
-              result.anomalies_possibles.length > 0 && (
-                <div className="bg-red-100 p-6">
-                  <h3 className="text-lg font-semibold text-gray-700">
-                    Anomalies possibles:
-                  </h3>
-                  <ul className="list-disc list-inside text-gray-600">
-                    {result.anomalies_possibles.map((a: string, i: number) => (
-                      <li key={i}>{a}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+        {result.anomalies_possibles && result.anomalies_possibles.length > 0 && (
+          <div className="bg-red-100 p-6">
+            <h3 className="text-lg font-semibold text-gray-700">Anomalies possibles:</h3>
+            <ul className="list-disc list-inside text-gray-600">
+              {result.anomalies_possibles.map((a: string, i: number) => (
+                <li key={i}>{a}</li>
+              ))}
+            </ul>
           </div>
-        </div>
+        )}
+
+        {isEmptyResult ? (
+          <div className="text-center">
+            <p className="text-sm text-gray-500 italic">{result.message}</p>
+            <RetryButton />
+          </div>
+        ) : (
+          !hasStructuredData &&
+          result.message && (
+            <pre className="p-4 bg-gray-100 rounded text-gray-700">{result.message}</pre>
+          )
+        )}
+
+        <p className="text-sm text-end text-gray-500 italic">Modèle IA : {llmmodele}</p>
       </div>
     );
   }
+
   return null;
 }
