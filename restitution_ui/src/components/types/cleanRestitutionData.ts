@@ -53,7 +53,7 @@ export const removeIdsFromFormData = (
     })) as any,
     
     llmmodeles: data.llmmodeles.map((llmmodele) => ({
-      libelle_llm: llmmodele.libelle_llm,
+      llmmodele: llmmodele.libelle_llm,
     })) as any,
 
     operation_selected: data.operation_selected.map((operation) => ({
