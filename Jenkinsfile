@@ -137,21 +137,14 @@ node {
             curl -X POST -F "token=%TRIGGER_TOKEN%" -F "ref=main" https://gitlab.com/api/v4/projects/79733394/trigger/pipeline || exit /b 1
             """
         }
-    } 
+    }
 
     stage('Init Prod') {
-        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
+        sleep 80
 
-            // Poll jusqu'à ce que restt-postgres soit running (max ~5 min : 15 × 20s)
-            retry(15) {
-                sleep 20
-                bat """
-                ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker ps --filter name=restt-postgres --filter status=running | grep -q restt-postgres"
-                """
-            }
-
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {  
             bat """
-            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
             """
             
             sleep 2 
