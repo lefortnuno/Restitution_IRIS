@@ -32,12 +32,13 @@ const ChampsSelector = ({
   name,
   placeholder,
   attributsMapName,
+  error,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [step, setStep] = useState<string>("select");
   const [currentAttribut, setCurrentAttribut] = useState<ChampsAVC | null>(
-    null
+    null,
   );
 
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -78,7 +79,12 @@ const ChampsSelector = ({
     }
 
     if (item.type === "concat") {
-      const sepLabel = item.separateur === " " ? `"espace"` : item.separateur ? `"${item.separateur}"` : null;
+      const sepLabel =
+        item.separateur === " "
+          ? `"espace"`
+          : item.separateur
+            ? `"${item.separateur}"`
+            : null;
       const sep = sepLabel ? `séparé par ${sepLabel}` : "sans séparateur";
       return `Concaténation(${item.nom} avec "${item.parametre ?? ""}" ${sep})`;
     }
@@ -100,7 +106,7 @@ const ChampsSelector = ({
 
   return (
     <div className={`${divPackForm} min-w-[250px]`}>
-      <div className={`${divForm}`}>
+      <div className={`${divForm} ${error ? "border-red-500" : ""}`}>
         <Label className={labelForm}>{label}</Label>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -123,7 +129,7 @@ const ChampsSelector = ({
                     <X
                       className={`${xForm} ${
                         operation_selected.some(
-                          (op: any) => op.as_nom === item.as_nom
+                          (op: any) => op.as_nom === item.as_nom,
                         )
                           ? "opacity-50 cursor-not-allowed"
                           : ""
@@ -133,14 +139,14 @@ const ChampsSelector = ({
 
                         if (
                           operation_selected.some(
-                            (op: any) => op.as_nom === item.as_nom
+                            (op: any) => op.as_nom === item.as_nom,
                           )
                         ) {
                           return;
                         }
 
                         const updated = champ_selectionner.value.filter(
-                          (_: ChampsAVC, i: number) => i !== idx
+                          (_: ChampsAVC, i: number) => i !== idx,
                         );
                         champ_selectionner.onChange(updated);
                         saveTransformation();
@@ -165,7 +171,7 @@ const ChampsSelector = ({
             className="px-4 space-y-1 transition-all duration-300 bg-white"
           >
             {["Tableau simple", "Tableau croisée dynamique"].includes(
-              nomAffichage
+              nomAffichage,
             ) && (
               <ChampTables
                 step={step}
@@ -178,11 +184,7 @@ const ChampsSelector = ({
               />
             )}
 
-            {[
-              "Histogramme",
-              "Graphique en barres",
-              "Graphique linéaire",
-            ].includes(nomAffichage) && (
+            {["Histogramme", "Graphique linéaire"].includes(nomAffichage) && (
               <ChampsAxesContent
                 label="Axes"
                 formats={formats}
@@ -192,12 +194,10 @@ const ChampsSelector = ({
             )}
 
             {["Diagramme circulaire", "Diagramme en secteurs"].includes(
-              nomAffichage
+              nomAffichage,
             ) && <ChampsCircles />}
 
-            {["Cartographie"].includes(
-              nomAffichage
-            ) && (
+            {["Cartographie"].includes(nomAffichage) && (
               <ChampsMaps
                 formats={formats}
                 champsField={champ_selectionner}
@@ -207,6 +207,7 @@ const ChampsSelector = ({
           </PopoverContent>
         </Popover>
       </div>
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
   );
 };

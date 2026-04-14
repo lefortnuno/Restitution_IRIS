@@ -6,10 +6,9 @@ export type Option = {
 export const affichageOptions: Option[] = [
   { value: "table-simple", label: "Tableau simple" },
   { value: "table-pivot", label: "Tableau croisée dynamique" },
-  { value: "chart-histo", label: "Histogramme" },
-  { value: "chart-bar", label: "Graphique en barres" },
-  { value: "chart-line", label: "Graphique linéaire" },
   { value: "chart-pie", label: "Diagramme circulaire" },
+  { value: "chart-histo", label: "Histogramme" }, 
+  { value: "chart-line", label: "Graphique linéaire" },
   { value: "maps-pie", label: "Cartographie" }, 
 ];
 

@@ -217,18 +217,7 @@ export default function Visualisation() {
           <PieChartComponent titre={result.nom} sourceData={result.resultats}>
             {ia}
           </PieChartComponent>
-        );
-
-      case "Graphique en barres":
-        return (
-          <DualChartComponent
-            titre={result.nom}
-            backendData={result.resultats}
-            views={true}
-          >
-            {ia}
-          </DualChartComponent>
-        );
+        ); 
 
       case "Graphique linéaire":
         return (

@@ -155,8 +155,8 @@ export default function DualMapsComponent({
           className="inline-flex items-center gap-2 justify-center rounded-md border border-transparent px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors bg-teal-600 hover:bg-teal-700"
         >
           {isTheDual
-            ? "Basculer en Cartographie en barres"
-            : "Basculer en Cartographie circulaires"}
+            ? "Basculer en Cartographie circulaires"
+            : "Basculer en Cartographie en barres"}
         </button>
       </div>
 

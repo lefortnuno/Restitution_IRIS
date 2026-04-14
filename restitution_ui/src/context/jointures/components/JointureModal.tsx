@@ -21,7 +21,7 @@ export default function JointureModal({
   formats,
   onAdd,
   existingJoins = [],
-}: JointureModalProps) { 
+}: JointureModalProps) {
   const [joinType, setJoinType] = useState("FJ");
   const [selectedAttributs, setSelectedAttributs] = useState<
     Record<string, StructTableType | null>
@@ -65,7 +65,7 @@ export default function JointureModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-[calc(60%-20px)] max-w-6xl bg-white rounded shadow-lg overflow-hidden flex flex-col max-h-[calc(100%-100px)]">
+      <div className="w-[calc(60%-20px)] max-w-6xl bg-white rounded shadow-lg flex flex-col max-h-[calc(100%-100px)]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-gray-100 border-b border-gray-300">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -119,7 +119,7 @@ export default function JointureModal({
                   isExpanded={expandedFormat === formatName}
                   onToggleExpand={() => {
                     setExpandedFormat((prev) =>
-                      prev === formatName ? null : formatName
+                      prev === formatName ? null : formatName,
                     );
                   }}
                   isDisabled={(attrId) => {

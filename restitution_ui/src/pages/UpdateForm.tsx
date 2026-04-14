@@ -196,6 +196,63 @@ export default function UpdateForm() {
                       hasError = true;
                     }
 
+                    const selectedAffichage =
+                      rawData.affichages?.[0]?.nom_affichage ?? "";
+                    const mapsTypes = ["Cartographie"];
+
+                    const hasMapsNiv = rawData.champs?.some(
+                      (c) => c.as_nom === "maps-niv",
+                    );
+                    const hasEnoughChamps =
+                      rawData.champs && rawData.champs.length >= 4;
+
+                    if (
+                      mapsTypes.includes(selectedAffichage) &&
+                      (!hasMapsNiv || !hasEnoughChamps)
+                    ) {
+                      methods.setError("champs", {
+                        type: "manual",
+                        message: "Completez la configuration",
+                      });
+                      hasError = true;
+                    }
+
+                    const chartTypesRequiring3Champs = [
+                      "Histogramme",
+                      "Graphique linéaire",
+                    ];
+                    if (
+                      chartTypesRequiring3Champs.includes(selectedAffichage) &&
+                      (!rawData.champs || rawData.champs.length < 3)
+                    ) {
+                      methods.setError("champs", {
+                        type: "manual",
+                        message: "Completez la configuration",
+                      });
+                      hasError = true;
+                    }
+
+                    const hasTcWithoutDate = rawData.operation_selected?.some(
+                      (op) => {
+                        const hasTc = op.expressions?.some(
+                          (e) => e.valeur === "tc",
+                        );
+                        if (!hasTc) return false;
+                        const dateArgs = op.expressions?.filter(
+                          (e) => e.operateur_arithmetique === ",[",
+                        );
+                        return !dateArgs || dateArgs.length < 2;
+                      },
+                    );
+                    if (hasTcWithoutDate) {
+                      methods.setError("operation_selected", {
+                        type: "manual",
+                        message:
+                          "Ajouter une date de reference au taux de croissance dans le parametrage",
+                      });
+                      hasError = true;
+                    }
+
                     // Stop si au moins une erreur
                     if (hasError) return;
 

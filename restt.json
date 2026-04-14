@@ -256,7 +256,7 @@
   {
     "formats_selected": [{ "id_structure": 7, "name_structure": "AGIOS" }],
     "jointures": [],
-    "affichages": [{ "nom_affichage": "Graphique en barres" }],
+    "affichages": [{ "nom_affichage": "Graphique linéaire" }],
     "llmmodeles": [
       {
         "libelle_llm": "qwen/qwen3-32b"

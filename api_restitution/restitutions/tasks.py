@@ -161,7 +161,7 @@ def lancer_traitement_restitution(restitution_id):
     api_data = req_data["api_data"]
     api_data_original = api_data    
      
-    if affichage_data.strip().lower() in ["graphique en barres", "histogramme", "graphique linéaire"]: 
+    if affichage_data.strip().lower() in ["histogramme", "graphique linéaire"]: 
         list_champ_groupBY_axes = []
         
         for c in champs_data:
