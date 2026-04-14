@@ -12,9 +12,9 @@ node {
 
             bat 'type restitution_ui\\.env' 
             bat 'docker compose down -v' 
-            bat 'docker compose build --no-cache' 
-            bat 'docker compose up -d' 
-            // bat 'docker compose up -d --build' 
+            // bat 'docker compose build --no-cache' 
+            // bat 'docker compose up -d' 
+            bat 'docker compose up -d --build' 
         }     
         sleep 40
     }
@@ -135,6 +135,18 @@ node {
         withCredentials([string(credentialsId: 'gitlab-trigger-token', variable: 'TRIGGER_TOKEN')]) {
             bat """
             curl -X POST -F "token=%TRIGGER_TOKEN%" -F "ref=main" https://gitlab.com/api/v4/projects/79733394/trigger/pipeline || exit /b 1
+            """
+        }
+    }
+
+    stage('Deploy on EC2') {
+        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
+            bat """
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "
+            cd /home/ubuntu/aws_restitution &&
+            docker compose pull &&
+            docker compose up -d
+            "
             """
         }
     }
