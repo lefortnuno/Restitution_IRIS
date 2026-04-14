@@ -7,6 +7,7 @@ import { FiltrePop } from "@/context/filtrePop/filtrePopType";
 import { CascadeFormatSelector } from "@/context/filtrePop/components/CascadeFormatSelector";
 import { ConditionSelector } from "@/context/filtrePop/components/ConditionSelector";
 import { ValueSelector } from "@/context/filtrePop/components/ValueSelector";
+import { ValueSelectorDate } from "@/context/filtrePop/components/ValueSelectorDate";
 import { useFormContext, useWatch } from "react-hook-form";
 import { AttributsMap } from "@/components/types/typage-global";
 
@@ -43,6 +44,8 @@ export default function FiltrePopModal({
     useState<FiltrePop["operateur_comparaison"]>(null);
   const [selectedValeur, setSelectedValeur] =
     useState<FiltrePop["parametre"]>(null);
+  const [condSelector, setCondSelector] = useState<string>("");
+  const [selectedAttrType, setSelectedAttrType] = useState<string>("");
 
   const [searchTerms, setSearchTerms] = useState<Record<string, string>>({});
   const [expandedFormat, setExpandedFormat] = useState<string | null>(null);
@@ -81,6 +84,8 @@ export default function FiltrePopModal({
     setSelectedAttribut(null);
     setSelectedCondition(null);
     setSelectedValeur(null);
+    setCondSelector("");
+    setSelectedAttrType("");
     setSearchTerms({});
     setExpandedFormat(null);
     setJoinType(null);
@@ -129,7 +134,7 @@ export default function FiltrePopModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-[calc(60%-20px)] max-w-6xl bg-white rounded shadow-lg overflow-hidden flex flex-col max-h-[calc(100%-100px)] min-h-80">
+      <div className="w-[calc(80%-20px)] max-w-6xl bg-white rounded shadow-lg flex flex-col max-h-[calc(100%-60px)] min-h-80">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-gray-100 border-b border-gray-300">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -154,8 +159,8 @@ export default function FiltrePopModal({
         </div>
 
         {/* Scrollable Content */}
-        <div className="p-4">
-          <div className="flex flex-wrap justify-center gap-4 w-full">
+        <div className="p-4 overflow-visible flex-1">
+          <div className="flex flex-wrap justify-center gap-4 w-full overflow-visible">
             <CascadeFormatSelector
               formats={mappedFormats}
               selectedFormat={selectedFormat}
@@ -171,18 +176,34 @@ export default function FiltrePopModal({
                 if (!selectedFormat) return;
                 setSelectedAttributs({ [selectedFormat]: attr });
                 setSelectedAttribut(`${selectedFormat}.${attr.name}`);
+                setSelectedAttrType(attr.type);
+                setSelectedCondition(null);
+                setCondSelector("");
               }}
             />
 
             <ConditionSelector
               joinType={selectedCondition}
               onChange={setSelectedCondition}
+              attributType={selectedAttrType}
+              onCondSelectorChange={setCondSelector}
             />
 
-            <ValueSelector
-              joinType={selectedValeur}
-              onChange={setSelectedValeur}
-            />
+            {selectedAttrType &&
+            ["date", "timestamp"].some((t) =>
+              selectedAttrType.toLowerCase().includes(t)
+            ) ? (
+              <ValueSelectorDate
+                joinType={selectedValeur}
+                onChange={setSelectedValeur}
+                condSelector={condSelector}
+              />
+            ) : (
+              <ValueSelector
+                joinType={selectedValeur}
+                onChange={setSelectedValeur}
+              />
+            )}
           </div>
         </div>
 

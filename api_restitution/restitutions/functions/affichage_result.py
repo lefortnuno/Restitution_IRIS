@@ -223,7 +223,7 @@ def adjust_result_by_affichage(resultats_op: list, affichage: str, champs_axes: 
 
 
     # === Cas 3 : Cartographie === 
-    if affichage in ["cartographie en barres", "cartographie circulaires"]:  
+    if affichage in ["cartographie"]:  
         resultats = resultats_op[0] if isinstance(resultats_op[0], list) else resultats_op
         if not resultats:
             return {"resultats_final": {"labelsX": [], "datasets": []}} 

@@ -36,12 +36,12 @@ export default function AffichageSelector({ name, placeholder, error }: Props) {
   const toggleFormat = (format: Option) => {
     setSearch("");
     const newValue = [{ nom_affichage: format.label }];
-    onChange(newValue); // ✅ déclare la valeur à RHF
-    setValue("affichages", newValue); // garde ta logique actuelle
+    onChange(newValue);
+    setValue("affichages", newValue);
 
     const currentChamps = getValues("champs") || [];
     const filteredChamps = currentChamps.filter((champ: ChampsAVC) =>
-      champ.transformation?.type?.startsWith("op_")
+      champ.transformation?.type === "op_" || champ.type === "op_"
     );
     setValue("champs", filteredChamps);
     setIsFocused(false);

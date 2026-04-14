@@ -15,6 +15,7 @@ import { useController, useWatch } from "react-hook-form";
 import { GlobalProps } from "@/components/types/typage-global";
 import { FiltrePop } from "@/context/filtrePop/filtrePopType";
 import FiltrePopModal from "@/context/filtrePop/components/FiltrePopModal";
+import { joinTypeLabels } from "@/context/filtrePop/components/ConditionSelector";
 
 export const PopulationFilterSelector = ({
   label,
@@ -72,7 +73,7 @@ export const PopulationFilterSelector = ({
               >
                 <span className={spanResultForm}>
                   <b>{jointure.operateur_logique}</b> ({jointure.champs_cible}{" "}
-                  {jointure.operateur_comparaison} {jointure.parametre})
+                  {joinTypeLabels[jointure.operateur_comparaison ?? ""] ?? jointure.operateur_comparaison} {jointure.parametre})
                 </span>
                 <X
                   className={xForm}

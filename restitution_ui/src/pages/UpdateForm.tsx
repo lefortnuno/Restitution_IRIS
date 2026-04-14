@@ -41,6 +41,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LlmmodeleSelector from "@/context/llmmodeles/Llmmodele";
 import BooleanField from "@/context/texts/BooleanField";
+import { LoadingBar } from "@/components/ui/LoadingBar";
 
 export default function UpdateForm() {
   const [completOP, setCompletOP] = useState<boolean>(false);
@@ -127,7 +128,7 @@ export default function UpdateForm() {
     }
   }, [completOP, methods]);
 
-  if (isLoading) return <p>Chargement...</p>;
+  if (isLoading) return <LoadingBar />;
   if (error) return <p>Erreur de chargement</p>;
 
   return (

@@ -182,7 +182,7 @@ def lancer_traitement_restitution(restitution_id):
         logic_operation = res_gls["result"] 
         params_operation = res_gls["params"] 
 
-    elif affichage_data.strip().lower() in ["cartographie à barres", "cartographie circulaires"]:  
+    elif affichage_data.strip().lower() in ["cartographie"]:  
         champ_region = next((ch["parametre"] for ch in champs_data if ch["type"] == "manual"), None)
         champ_lat = next((ch["parametre"] for ch in champs_data if ch["type"] == "lat"), None)
         champ_lon = next((ch["parametre"] for ch in champs_data if ch["type"] == "lon"), None)
@@ -226,7 +226,7 @@ def lancer_traitement_restitution(restitution_id):
             else:
                 api_data = api_data_original  
 
-            if affichage_data.strip().lower() in ["cartographie à barres", "cartographie circulaires"]:
+            if affichage_data.strip().lower() in ["cartographie"]:
                 champ_region = next((ch["parametre"] for ch in champs_data if ch["type"] == "manual"), None)
                 champ_lat = next((ch["parametre"] for ch in champs_data if ch["type"] == "lat"), None)
                 champ_lon = next((ch["parametre"] for ch in champs_data if ch["type"] == "lon"), None)

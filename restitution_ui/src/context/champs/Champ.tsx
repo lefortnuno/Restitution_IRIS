@@ -74,15 +74,13 @@ const ChampsSelector = ({
     if (item.type === "none") return item.nom;
 
     if (item.type === "extract") {
-      return `Extract(${item.nom}, taille_${item.taille || ""}, pos_${
-        item.position || ""
-      })`;
+      return `Extraction(${item.nom} position ${item.position ?? ""} sur ${item.taille ?? ""} caractère${(item.taille ?? 0) > 1 ? "s" : ""})`;
     }
 
     if (item.type === "concat") {
-      return `Concat(${item.nom}, by_${item.separateur || ""}, with_${
-        item.parametre || ""
-      })`;
+      const sepLabel = item.separateur === " " ? `"espace"` : item.separateur ? `"${item.separateur}"` : null;
+      const sep = sepLabel ? `séparé par ${sepLabel}` : "sans séparateur";
+      return `Concaténation(${item.nom} avec "${item.parametre ?? ""}" ${sep})`;
     }
 
     if (item.type === "AxesX" || item.type === "AxesY") {
@@ -197,7 +195,7 @@ const ChampsSelector = ({
               nomAffichage
             ) && <ChampsCircles />}
 
-            {["Cartographie circulaires", "Cartographie à barres"].includes(
+            {["Cartographie"].includes(
               nomAffichage
             ) && (
               <ChampsMaps

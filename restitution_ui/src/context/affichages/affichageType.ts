@@ -10,8 +10,7 @@ export const affichageOptions: Option[] = [
   { value: "chart-bar", label: "Graphique en barres" },
   { value: "chart-line", label: "Graphique linéaire" },
   { value: "chart-pie", label: "Diagramme circulaire" },
-  { value: "maps-pie", label: "Cartographie circulaires" },
-  { value: "maps-bar", label: "Cartographie en barres" },
+  { value: "maps-pie", label: "Cartographie" }, 
 ];
 
 export type Props = {

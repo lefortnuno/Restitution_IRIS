@@ -83,7 +83,7 @@ export default function JointureModal({
         </div>
 
         {/* Scrollable Content */}
-        <div className="min-h-80 overflow-y-auto p-6 flex-1 scrollbar-hide">
+        <div className="p-4 overflow-visible flex-1 scrollbar-hide">
           <div className="flex flex-wrap gap-4">
             {formats?.map((format) => {
               if (!format) return null;

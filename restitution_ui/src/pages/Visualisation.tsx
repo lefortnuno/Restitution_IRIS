@@ -20,6 +20,7 @@ import DualMapsComponent from "@/components/graphs/DualMapsComponent";
 import { SortingState } from "@tanstack/react-table";
 import IAAnalysisResult from "./IAAnalysisResult";
 import { ErrorState } from "./ErrorState";
+import { LoadingBar } from "@/components/ui/LoadingBar";
 
 defaults.maintainAspectRatio = false;
 defaults.responsive = true;
@@ -245,23 +246,12 @@ export default function Visualisation() {
           </HistogrammeComponent>
         );
 
-      case "Cartographie circulaires":
+      case "Cartographie":
         return (
           <DualMapsComponent
             titre={result.nom}
             backendData={result.resultats}
             views={false}
-          >
-            {ia}
-          </DualMapsComponent>
-        );
-
-      case "Cartographie à barres":
-        return (
-          <DualMapsComponent
-            titre={result.nom}
-            backendData={result.resultats}
-            views={true}
           >
             {ia}
           </DualMapsComponent>
@@ -290,13 +280,7 @@ export default function Visualisation() {
           <Url />
 
           <div className="py-2">
-            {loading && (
-              <div className="flex justify-center items-center p-8">
-                <div className="w-48 h-1 bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-teal-400 rounded-full animate-[loading_1.5s_ease-in-out_infinite]" />
-                </div>
-              </div>
-            )}
+            {loading && <LoadingBar />}
 
             {error && (
               <ErrorState

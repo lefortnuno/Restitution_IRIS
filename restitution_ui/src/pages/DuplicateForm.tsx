@@ -42,6 +42,7 @@ import { useNavigate } from "react-router-dom";
 import { removeIdsFromFormData } from "@/components/types/cleanRestitutionData";
 import BooleanField from "@/context/texts/BooleanField";
 import LlmmodeleSelector from "@/context/llmmodeles/Llmmodele";
+import { LoadingBar } from "@/components/ui/LoadingBar";
 
 export default function DuplicateForm() {
   const [completOP, setCompletOP] = useState<boolean>(false);
@@ -128,7 +129,7 @@ export default function DuplicateForm() {
     }
   }, [completOP, methods]);
 
-  if (isLoading) return <p>Chargement...</p>;
+  if (isLoading) return <LoadingBar />;
   if (error) return <p>Erreur de chargement</p>;
 
   return (

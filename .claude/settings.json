@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/AC2I/Desktop/IRIS_CLOUD/IRIS_FRONTEND/src/**)",
+      "Read(//c/Users/AC2I/Desktop/IRIS_CLOUD/Restitution/**)"
+    ]
+  }
+}

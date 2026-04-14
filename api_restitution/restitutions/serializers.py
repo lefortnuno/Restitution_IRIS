@@ -270,6 +270,8 @@ class RestitutionsSerializer(serializers.ModelSerializer):
         delete_missing_instances_from_json(operations_data, Operations, instance)
         delete_missing_instances_from_json(jointures_data, Jointures, instance)
         delete_missing_instances_from_json(formats_data, Formats, instance)
+        delete_missing_instances_from_json(affichages_data, Affichages, instance)
+        delete_missing_instances_from_json(llmmodeles_data, LLMModeles, instance)
 
         with transaction.atomic():
             # Mise à jour des champs simples

@@ -29,7 +29,7 @@ export const divResultForm =
 export const divResult2Form =
   "flex items-center px-2 mt-1 text-sm bg-gray-100 border border-gray-300 rounded shadow-sm min-w-0";
 
-export const spanResultForm = "mr-1 text-gray-800 max-w-[140px] truncate cursor-pointer overflow-hidden"; 
+export const spanResultForm = "mr-1 text-gray-800 max-w-[350px] cursor-pointer overflow-hidden"; 
 
 export const xForm =
   "w-4 h-4 text-red-500 transition-transform duration-300 hover:scale-110 hover:text-red-500";

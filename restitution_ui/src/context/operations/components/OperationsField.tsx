@@ -86,6 +86,16 @@ export default function OperationsField({
     setCurrOpComplet(true);
   };
 
+  const conditionLabels: Record<string, string> = {
+    "<": "inférieur à",
+    ">": "supérieur à",
+    "==": "égal à",
+    "!=": "différent de",
+    "%": "contient",
+    ">=": "supérieur ou égal à",
+    "<=": "inférieur ou égal à",
+  };
+
   const renderTransformationSummary = (item: OperationType): string => {
     const formatExpression = (expressions?: ExpressionType) => {
       if (!expressions || expressions.length === 0) return "";
@@ -113,7 +123,7 @@ export default function OperationsField({
           return `${cond.operateur_logique ?? ""} ${
             cond.cle_logique ?? ""
           } ${champsCibleStr} ${
-            cond.operateur_comparaison ?? ""
+            conditionLabels[cond.operateur_comparaison ?? ""] ?? cond.operateur_comparaison ?? ""
           } ${valeurRefStr}`;
         })
         .join(" ");

@@ -140,12 +140,16 @@ class Filtre_populations(models.Model):
         ("==", "=="),
         ("!=", "!="),
         ("%", "%"),
+        ("%%", "%%"),
+        ("A%", "A%"),
+        ("%A", "%A"),
+        ("between", "between"),
     )
 
     restitution = models.ForeignKey(Restitutions, on_delete=models.CASCADE, related_name="filtres_pop", null=True)
     operateur_logique = models.CharField(max_length=50, choices=list_operateur, null=True)
     champs_cible = models.CharField(max_length=255)
-    operateur_comparaison = models.CharField(max_length=5, choices=list_condition)
+    operateur_comparaison = models.CharField(max_length=10, choices=list_condition)
     parametre = models.JSONField()  
     id_precedente = models.IntegerField(blank=True, null=True) 
 
