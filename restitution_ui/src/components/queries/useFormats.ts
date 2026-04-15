@@ -51,4 +51,9 @@ export const useFormats = (
     queryKey: ["formats", task_id],
     queryFn: () => fetchFormats(task_id),
     enabled: options.enabled,
+    // Réessaye toutes les 1,5s tant que la tâche Celery n'est pas SUCCESS
+    refetchInterval: (query) => {
+      if (query.state.data?.status === "SUCCESS") return false;
+      return 1500;
+    },
   });

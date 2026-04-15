@@ -175,14 +175,9 @@ class RestitutionViewSet(viewsets.ModelViewSet):
 
         :return: ID de la tâche Celery lancée.
         """
-        format2 = list_formats()
-        print("[--VIEWS--] format2= ",format2)
-
-        format = list_formats.delay()
-        print("[--VIEWS--] Appel a format depuis celery= ", format)
-
+        task = list_formats.delay()
         return Response({
-            "format_check_task_id": format.id
+            "format_check_task_id": task.id
         }, status=status.HTTP_200_OK)
 
 

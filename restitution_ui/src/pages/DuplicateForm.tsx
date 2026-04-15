@@ -6,11 +6,15 @@ import {
   defaultRestitution,
 } from "@/components/form/schema";
 import { useTaskFormats, useFormats } from "@/components/queries/useFormats";
-import { createRestitution, getRestitutionID } from "@/components/queries/useCRURestitution";
+import {
+  createRestitution,
+  getRestitutionID,
+} from "@/components/queries/useCRURestitution";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { RotateCcw } from "lucide-react";
 import { removeIdsFromFormData } from "@/components/types/cleanRestitutionData";
 import { LoadingBar } from "@/components/ui/LoadingBar";
 import FormPageLayout from "@/components/form/FormPageLayout";
@@ -21,7 +25,7 @@ export default function DuplicateForm() {
   const { restitutionId } = useParams();
   const navigate = useNavigate();
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["restitution", restitutionId],
     queryFn: () => getRestitutionID(Number(restitutionId)),
     enabled: !!restitutionId,
@@ -33,22 +37,31 @@ export default function DuplicateForm() {
     mode: "all",
   });
 
+  const applyData = (d: typeof data) => {
+    if (!d) return;
+    methods.reset({
+      nom: d.nom ?? "",
+      status_llm: d.status_llm ?? true,
+      formats_selected: d.formats_selected ?? [],
+      jointures: d.jointures ?? [],
+      filtres_pop: d.filtres_pop ?? [],
+      affichages: d.affichages ?? [],
+      llmmodeles: d.llmmodeles ?? [],
+      operation_selected: d.operation_selected ?? [],
+      champs: d.champs ?? [],
+      description: d.description ?? "",
+    });
+  };
+
   useEffect(() => {
-    if (data) {
-      methods.reset({
-        nom: data.nom ?? "",
-        status_llm: data.status_llm ?? true,
-        formats_selected: data.formats_selected ?? [],
-        jointures: data.jointures ?? [],
-        filtres_pop: data.filtres_pop ?? [],
-        affichages: data.affichages ?? [],
-        llmmodeles: data.llmmodeles ?? [],
-        operation_selected: data.operation_selected ?? [],
-        champs: data.champs ?? [],
-        description: data.description ?? "",
-      });
-    }
-  }, [data, methods]);
+    applyData(data);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  const handleRetry = async () => {
+    const result = await refetch();
+    if (result.data) applyData(result.data);
+  };
 
   const { data: dataTask, isSuccess: isTaskSuccess } = useTaskFormats();
   const {
@@ -73,16 +86,32 @@ export default function DuplicateForm() {
   });
 
   if (isLoading) return <LoadingBar />;
-  if (error) return <p>Erreur de chargement</p>;
 
   return (
     <FormPageLayout titre="Dupliquer une restitution">
+      {error && (
+        <div className="mb-4 flex items-center justify-between gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <p className="text-sm font-medium">
+            Impossible de charger les données de la restitution dans le
+            formulaire.
+          </p>
+          <button
+            onClick={handleRetry}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors shrink-0"
+          >
+            <RotateCcw size={13} />
+            Réessayer
+          </button>
+        </div>
+      )}
       <RestitutionFormBody
         methods={methods}
         submitLabel="Générer"
         completOP={completOP}
         setCompletOP={setCompletOP}
-        onValidSubmit={(rawData) => mutation.mutate(removeIdsFromFormData(rawData))}
+        onValidSubmit={(rawData) =>
+          mutation.mutate(removeIdsFromFormData(rawData))
+        }
         isFormatsError={isFormatsError}
         isFormatsSuccess={isFormatsSuccess}
         formatsData={formatsData}

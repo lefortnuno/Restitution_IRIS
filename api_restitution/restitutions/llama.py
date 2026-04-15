@@ -6,36 +6,81 @@ from dotenv import load_dotenv
 from groq import Groq
 
 load_dotenv()
- 
-# GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-# GROQ_MODEL_LLAMA70B = "qwen/qwen3-32b"
-GROQ_MODEL_LLAMA70B = "llama-3.3-70b-versatile"
 
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 client = Groq(api_key=GROQ_API_KEY)
 
+# ──────────────────────────────────────────────
+# Limites Groq par modèle
+# ──────────────────────────────────────────────
+# tpm               : tokens par minute autorisés
+# token_limit       : budget total par appel (system + user + données)
+# data_chunk_budget : tokens réservés aux données dans chaque chunk
+# delay_safety_s    : secondes de marge fixe ajoutées au délai calculé
+MODEL_RATE_CONFIG = {
+    "qwen/qwen3-32b": {
+        "tpm": 6_000,
+        "token_limit": 3_000,
+        "data_chunk_budget": 1_800,
+        "delay_safety_s": 3,
+    },
+    "llama-3.3-70b-versatile": {
+        "tpm": 12_000,
+        "token_limit": 5_000,
+        "data_chunk_budget": 3_500,
+        "delay_safety_s": 3,
+    },
+}
 
-# -------------------------------
+# Config de secours si le modèle n'est pas reconnu (conservateur)
+_DEFAULT_CONFIG = {
+    "tpm": 6_000,
+    "token_limit": 3_000,
+    "data_chunk_budget": 1_800,
+    "delay_safety_s": 3,
+}
+
+
+def _get_model_config(modele: str) -> dict:
+    """Retourne la config rate-limit du modèle (correspondance partielle)."""
+    for key, cfg in MODEL_RATE_CONFIG.items():
+        if key in modele or modele in key:
+            return cfg
+    print(f"⚠️  Modèle '{modele}' inconnu → config conservatrice appliquée")
+    return _DEFAULT_CONFIG
+
+
+def _rate_delay(tokens_sent: int, cfg: dict) -> float:
+    """
+    Calcule la pause nécessaire pour rester sous le TPM.
+    delay = tokens_sent / (tpm / 60)  +  marge de sécurité fixe
+    """
+    tps = cfg["tpm"] / 60.0          # tokens par seconde autorisés
+    delay = tokens_sent / tps + cfg["delay_safety_s"]
+    return round(delay, 1)
+
+
+# ──────────────────────────────────────────────
 # Utils tokens
-# -------------------------------
+# ──────────────────────────────────────────────
 def estimate_tokens(text: str) -> int:
+    """Estimation rapide : 1 token ≈ 4 caractères."""
     if not text:
         return 0
     return max(1, len(text) // 4)
 
 
-def split_array_by_token_limit(data, max_tokens):
-    chunks = []
-    current_chunk = []
-    current_tokens = 0
+def split_array_by_token_limit(data: list, max_tokens: int) -> list:
+    """Découpe une liste en chunks dont chacun tient dans max_tokens."""
+    chunks, current_chunk, current_tokens = [], [], 0
 
     for item in data:
-        item_text = json.dumps(item, ensure_ascii=False)
+        item_text   = json.dumps(item, ensure_ascii=False)
         item_tokens = estimate_tokens(item_text)
 
         if current_tokens + item_tokens > max_tokens and current_chunk:
             chunks.append(current_chunk)
-            current_chunk = [item]
+            current_chunk  = [item]
             current_tokens = item_tokens
         else:
             current_chunk.append(item)
@@ -47,9 +92,9 @@ def split_array_by_token_limit(data, max_tokens):
     return chunks
 
 
-# -------------------------------
-# Main
-# -------------------------------
+# ──────────────────────────────────────────────
+# Point d'entrée principal
+# ──────────────────────────────────────────────
 def initialisation_argument(
     entrepot_de_donnee,
     resultat_calcul,
@@ -62,11 +107,9 @@ def initialisation_argument(
     prompte_systeme,
     modele_llm
 ):
-
     try:
-        taille_schema = len(schema) if schema else 1
+        taille_schema    = len(schema)    if schema    else 1
         taille_calculStat = len(calculStat) if calculStat else 1
-
         timerequest = min(taille_schema * taille_calculStat * 80, 600)
 
         prompt_utilisateur = f"""
@@ -108,9 +151,9 @@ Description : {description}
         return None
 
 
-# -------------------------------
-# Groq Logic
-# -------------------------------
+# ──────────────────────────────────────────────
+# Orchestrateur : simple ou map-reduce
+# ──────────────────────────────────────────────
 def obtenir_reponse_llama_groq(
     prompt_systeme,
     prompt_utilisateur,
@@ -118,165 +161,149 @@ def obtenir_reponse_llama_groq(
     modele,
     timerequest
 ):
+    cfg = _get_model_config(modele)
+    token_limit    = cfg["token_limit"]
+    chunk_budget   = cfg["data_chunk_budget"]
 
-    TOKEN_LIMIT = 5000
-    BASE_DELAY = 6
-
-    base_tokens = (
+    overhead_tokens = (
         estimate_tokens(prompt_systeme)
         + estimate_tokens(prompt_utilisateur)
-        + estimate_tokens(json.dumps(resultat_calcul, ensure_ascii=False))
+        + 150  # marge sécurité
     )
+    data_tokens = estimate_tokens(json.dumps(resultat_calcul, ensure_ascii=False))
+    total_tokens = overhead_tokens + data_tokens
 
-    print(f"⚠️ Tokens estimés : {base_tokens}")
+    print(f"⚠️  Tokens estimés — overhead: {overhead_tokens}, data: {data_tokens}, total: {total_tokens} (limite: {token_limit}, modèle: {modele})")
 
-    # 🔹 CAS SIMPLE
-    if base_tokens <= TOKEN_LIMIT:
-        full_prompt = prompt_utilisateur + "\n\nRésultats :\n" + json.dumps(
-            resultat_calcul, ensure_ascii=False
+    # ── Cas simple : tout tient dans un seul appel ──
+    if total_tokens <= token_limit:
+        full_prompt = (
+            prompt_utilisateur
+            + "\n\nRésultats :\n"
+            + json.dumps(resultat_calcul, ensure_ascii=False)
         )
-        return _appel_groq(prompt_systeme, full_prompt, modele, timerequest)
+        return _appel_groq(prompt_systeme, full_prompt, modele, expect_final=True)
 
-    # 🔹 CAS DÉCOUPAGE
-    print("⚠️ Prompt trop volumineux → découpage")
+    # ── Cas chunking : map-reduce ──
+    print(f"⚠️  Volume trop élevé ({total_tokens} tokens) → découpage map-reduce")
 
     if not isinstance(resultat_calcul, list):
-        raise ValueError("resultat_calcul doit être une LISTE pour le découpage")
+        # Données non découpables : on tronque en dernier recours
+        print("⚠️  resultat_calcul n'est pas une liste — troncature")
+        full_prompt = (
+            prompt_utilisateur
+            + "\n\nRésultats (tronqués) :\n"
+            + json.dumps(resultat_calcul, ensure_ascii=False)[:8000]
+        )
+        return _appel_groq(prompt_systeme, full_prompt, modele, expect_final=True)
 
-    chunks = split_array_by_token_limit(resultat_calcul, 4500)
+    # Budget données par chunk = min(config, limite − overhead − marge)
+    effective_budget = min(chunk_budget, token_limit - overhead_tokens - 200)
+    if effective_budget < 500:
+        effective_budget = 500  # plancher minimal
+
+    chunks      = split_array_by_token_limit(resultat_calcul, effective_budget)
     total_parts = len(chunks)
+    print(f"📦  {total_parts} chunk(s) de ≤{effective_budget} tokens chacun")
+
+    # ── Phase MAP : analyse partielle de chaque chunk ──
+    partial_analyses = []
 
     for i, chunk in enumerate(chunks, start=1):
-        partial_prompt = f"""
-PARTIE {i}/{total_parts}
+        chunk_tokens = estimate_tokens(json.dumps(chunk, ensure_ascii=False))
+        call_tokens  = overhead_tokens + chunk_tokens
+        delay        = _rate_delay(call_tokens, cfg)
+        print(f"[LLM MAP] Chunk {i}/{total_parts} (~{call_tokens} tokens envoyés)")
 
-Consigne :
-- Analyse
-- MÉMORISE
-- NE GÉNÈRE PAS l'analyse finale
-- Répond STRICTEMENT :
-{{ "status": "PART_OK" }}
+        map_prompt = f"""{prompt_utilisateur}
 
-Données :
+CONSIGNE POUR CETTE PARTIE :
+Il s'agit de la partie {i}/{total_parts} des données.
+Produis une analyse PARTIELLE et COMPACTE uniquement sur ces données.
+Réponds UNIQUEMENT en JSON valide :
+{{
+  "synthese_partielle": "...",
+  "tendances": ["..."],
+  "anomalies": ["..."]
+}}
+
+Données (partie {i}/{total_parts}) :
 {json.dumps(chunk, ensure_ascii=False)}
 """
 
-        _appel_groq(
-            prompt_systeme,
-            partial_prompt,
-            modele,
-            timerequest,
-            expect_json=True
-        )
+        partial = _appel_groq(prompt_systeme, map_prompt, modele, expect_final=False)
+        if partial:
+            partial_analyses.append(partial)
+        else:
+            print(f"⚠️  Chunk {i} sans résultat — ignoré")
 
-        time.sleep(BASE_DELAY)
+        if i < total_parts:
+            print(f"⏳  Pause {delay}s (rate limit {cfg['tpm']} TPM)")
+            time.sleep(delay)
 
-    final_prompt = """
-Toutes les parties ont été transmises.
+    if not partial_analyses:
+        print("❌ Aucune analyse partielle récupérée")
+        return None
 
-Génère maintenant l'analyse finale
-au FORMAT JSON STRICT demandé.
+    # ── Phase REDUCE : synthèse des analyses partielles ──
+    reduce_tokens = overhead_tokens + estimate_tokens(json.dumps(partial_analyses, ensure_ascii=False))
+    reduce_delay  = _rate_delay(reduce_tokens, cfg)
+    print(f"[LLM REDUCE] Synthèse de {len(partial_analyses)} analyse(s) partielle(s)")
+    print(f"⏳  Pause {reduce_delay}s avant synthèse")
+    time.sleep(reduce_delay)
+
+    reduce_prompt = f"""{prompt_utilisateur}
+
+Les données ont été découpées en {total_parts} partie(s) et analysées séparément.
+Voici les analyses partielles :
+
+{json.dumps(partial_analyses, indent=2, ensure_ascii=False)}
+
+Synthétise ces analyses partielles en une ANALYSE FINALE COMPLÈTE.
+Respecte strictement le format JSON demandé.
 """
 
-    time.sleep(BASE_DELAY)
-
-    return _appel_groq(prompt_systeme, final_prompt, modele, timerequest)
+    return _appel_groq(prompt_systeme, reduce_prompt, modele, expect_final=True)
 
 
-# -------------------------------
-# Groq Call
-# -------------------------------
+# ──────────────────────────────────────────────
+# Appel Groq
+# ──────────────────────────────────────────────
 def _appel_groq(
-    prompt_systeme,
-    prompt_utilisateur,
-    modele,
-    timerequest,
-    expect_json=True
+    prompt_systeme: str,
+    prompt_utilisateur: str,
+    modele: str,
+    expect_final: bool = True
 ):
-
-    completion = client.chat.completions.create(
-        model=modele,
-        messages=[
-            {"role": "system", "content": prompt_systeme},
-            {"role": "user", "content": prompt_utilisateur}
-        ],
-        temperature=0.1,
-        max_completion_tokens=1024,
-        top_p=1,
-        stream=False
-    )
-
-    texte = completion.choices[0].message.content.strip()
-
-    print("[-LLAMA 1-] modele = ", modele)
-    print(f"✅ Groq OK ({modele})")
-
-    if not expect_json:
-        return texte
-
-    match = re.search(r"\{[\s\S]*\}", texte)
-    if not match:
-        raise ValueError("❌ JSON non détecté")
-
-    return json.loads(match.group(0))
-
-
-
-def obtenir_reponse_llama_groq1(prompt_systeme, prompt_utilisateur, modele, timerequest):
-
-    print("[-LLAMA 2-] modele = ", modele)
-    if modele in ("llama70", "llama-70b"):
-        modele = GROQ_MODEL_LLAMA70B
-
-    start_time = time.time()
-
+    """
+    Effectue un unique appel Groq.
+    - expect_final=True  → retourne un dict JSON complet (analyse finale)
+    - expect_final=False → retourne un dict JSON compact (analyse partielle)
+    Retourne None en cas d'échec.
+    """
     try:
-        print(f"📤 Requête envoyée à Groq ({modele}) - timeout: {timerequest}s")
-
-        # →→→ APPEL DIRECT GROQ SDK (comme ton snippet demandé)
         completion = client.chat.completions.create(
             model=modele,
             messages=[
-                {
-                    "role": "system",
-                    "content": "[CONTEXTE]\n"
-                               "Vous êtes un Analyste Senior expert en analyse de données.\n"
-                               "Votre rôle est d’interpréter les résultats statistiques fournis et d’en dégager "
-                               "des tendances utiles pour la prise de décision.\n\n"
-                               "[OBJECTIF]\n"
-                               "Fournir une analyse synthétique, claire et orientée métier des données transmises.\n\n"
-                               "[CONTRAINTES]\n"
-                               "- Votre sortie doit être au format JSON strict.\n"
-                               "- Les sections suivantes doivent toujours être présentes :\n"
-                               "  titre_analyse, tendances_cles, anomalies_possibles, resume_executif, ton_analyse_personnel.\n"
-                               "- Réponse concise, sans explications hors JSON.\n"
-                               "- Vous êtes rigoureux, neutre, et orienté performance.\n\n"
-                               "[STYLE DE COMMUNICATION]\n"
-                               "Professionnel, analytique et structuré."
-                },
-                {"role": "user", "content": prompt_utilisateur}
+                {"role": "system", "content": prompt_systeme},
+                {"role": "user",   "content": prompt_utilisateur},
             ],
             temperature=0.1,
             max_completion_tokens=1024,
             top_p=1,
-            stream=False
+            stream=False,
         )
 
         texte = completion.choices[0].message.content.strip()
-        end_time = time.time()
+        print(f"✅ Groq OK ({modele}) — {estimate_tokens(texte)} tokens en sortie")
 
-        print("\n" + "=" * 60)
-        print(f"✅  ANALYSE TERMINÉE (Groq) : {end_time - start_time:.2f}s {texte}")
-        print("=" * 60 + "\n")
-
-        # Extraction JSON
         match = re.search(r"\{[\s\S]*\}", texte)
-        if match:
-            return json.loads(match.group(0))
+        if not match:
+            print("⚠️  Aucun JSON détecté dans la réponse")
+            return None
 
-        raise ValueError("Aucun JSON détecté dans la réponse.")
+        return json.loads(match.group(0))
 
     except Exception as e:
-        print(f"\n💥 ERREUR avec Groq : {e}\n")
+        print(f"❌ Erreur appel Groq ({modele}) : {e}")
         return None
-

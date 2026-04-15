@@ -13,7 +13,7 @@ import {
   xForm,
 } from "@/components/ui/styles";
 import { useFormContext, useController } from "react-hook-form";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import {
   FormatOption,
@@ -31,7 +31,10 @@ export default function FormatSelectField({
   const { control, getValues, setValue } = useFormContext();
   const [search, setSearch] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const [isTreated, setIsTreated] = useState<FormatZod[]>([]);
+
+  // Ref pour dédupliquer les appels structures() — évite les appels concurrents
+  // sur le même id_structure (Add: toggleFormat + useEffect, Edit/Dup: reset async)
+  const fetchingIds = useRef<Set<number>>(new Set());
 
   const {
     field: { value = [], onChange },
@@ -47,46 +50,53 @@ export default function FormatSelectField({
   }, [options, search]);
 
   const structures = async (id_structure: number, name_structure: string) => {
+    // Guard 1 : déjà en cours de chargement
+    if (fetchingIds.current.has(id_structure)) return;
+
+    // Guard 2 : déjà présent dans attributs_map
+    const currentMap = getValues("attributs_map") || [];
+    const alreadyExists = currentMap.some((entry: any) => entry[id_structure]);
+    if (alreadyExists) return;
+
+    fetchingIds.current.add(id_structure);
     try {
-      // ✅ Ne rien faire si déjà présent dans attributs_map
-      const currentMap = getValues("attributs_map") || [];
-      const alreadyExists = currentMap.some((entry:any) => entry[id_structure]);
-      if (alreadyExists) {
+      const { struct_table_check_task_id } = await startTaskGetStructTable(id_structure);
+
+      // Guard 3 : taskId invalide (évite le spam check-task-status/undefined/)
+      if (!struct_table_check_task_id) {
+        console.error("[Formats] struct_table_check_task_id undefined pour", id_structure);
+        fetchingIds.current.delete(id_structure);
         return;
       }
 
-      const { struct_table_check_task_id } = await startTaskGetStructTable(
-        id_structure
-      );
-
-      let resultData;
       let status = "PENDING";
       while (status === "PENDING") {
         const response = await fetchStructTable(struct_table_check_task_id);
         status = response.status;
         if (status === "SUCCESS") {
-          resultData = response.result;
-
-          const newEntry: Record<
-            number,
-            Record<string, StructTableType[] | null>
-          > = {
-            [id_structure]: {
-              [name_structure]: resultData,
-            },
+          const newEntry: Record<number, Record<string, StructTableType[] | null>> = {
+            [id_structure]: { [name_structure]: response.result },
           };
-
-          setValue("attributs_map", [...currentMap, newEntry]);
+          // Relire currentMap au moment de l'écriture pour éviter les overwrites
+          const freshMap = getValues("attributs_map") || [];
+          const alreadyInMap = freshMap.some((entry: any) => entry[id_structure]);
+          if (!alreadyInMap) {
+            setValue("attributs_map", [...freshMap, newEntry]);
+          }
+        } else if (status !== "PENDING") {
+          console.warn("[Formats] Tâche échouée pour", id_structure, status);
         } else {
-          await new Promise((res) => setTimeout(res, 100));
+          await new Promise((res) => setTimeout(res, 500));
         }
       }
     } catch (error) {
       console.error("Erreur lors du chargement de la structure :", error);
+    } finally {
+      fetchingIds.current.delete(id_structure);
     }
   };
 
-  const toggleFormat = async (format: FormatOption) => {
+  const toggleFormat = (format: FormatOption) => {
     setSearch("");
     const formatZod = { id_structure: format.id, name_structure: format.name };
     const exists = value.some((f: FormatZod) => f.id_structure === format.id);
@@ -95,36 +105,28 @@ export default function FormatSelectField({
       : [...value, formatZod];
     onChange(newValue);
 
-    const currentMap: Array<
-      Record<number, Record<string, StructTableType[] | null>>
-    > = getValues("attributs_map") || [];
-
-    if (!exists) {
-      await structures(format.id, format.name);
-    } else {
-      const updatedMap = currentMap.filter(
-        (entry) => !entry.hasOwnProperty(format.id)
+    if (exists) {
+      // Suppression : retirer de attributs_map et libérer le guard
+      fetchingIds.current.delete(format.id);
+      const currentMap: Array<Record<number, Record<string, StructTableType[] | null>>> =
+        getValues("attributs_map") || [];
+      setValue(
+        "attributs_map",
+        currentMap.filter((entry) => !Object.prototype.hasOwnProperty.call(entry, format.id))
       );
-      setValue("attributs_map", updatedMap);
     }
+    // L'ajout : géré par useEffect([value]) ci-dessous
   };
 
+  // Charge les structures à chaque changement de value :
+  // - en Add : quand l'utilisateur sélectionne un format
+  // - en Edit/Duplicate : quand reset() peuple le formulaire après le fetch API
   useEffect(() => {
-    const existingFormats: FormatZod[] = getValues(name) || [];
-
-    if (existingFormats.length > 0) {
-      existingFormats.forEach((f) => {
-        const alreadyTreated = isTreated.some(
-          (treated) => treated.id_structure === f.id_structure
-        );
-        if (!alreadyTreated) {
-          structures(f.id_structure, f.name_structure);
-          setIsTreated((prev) => [...prev, f]);
-        }
-      });
-    }
+    (value as FormatZod[]).forEach((f) => {
+      structures(f.id_structure, f.name_structure);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [value]);
 
   return (
     <div className="relative mt-4 min-h-[48px] min-w-[282px]">

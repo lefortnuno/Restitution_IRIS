@@ -1,6 +1,5 @@
 import json
 import os
-import re
 import time
 import requests
 from lark import Lark  
@@ -29,7 +28,8 @@ load_dotenv()
 def lancer_llm_async(payload):
     """
     Task CELERY dédiée uniquement au LLM.
-    """ 
+    initialisation_argument retourne un dict JSON (ou None) — plus besoin de parser une chaîne.
+    """
     try:
         result = initialisation_argument(
             payload["entrepot_de_donnee"],
@@ -42,34 +42,15 @@ def lancer_llm_async(payload):
             payload["description"],
             payload["prompte_systeme"],
             payload["model"]
-        ) 
-        
+        )
+
         if result:
-            try: 
-                match = re.search(r"\{[\s\S]*\}", result)
-                if not match:
-                    raise ValueError("Aucun JSON détecté.")
-
-                json_str = match.group(0) 
-                analyse_json = json.loads(json_str)
-
-                print("📊 Analyse structurée reçue:")
-                print(json.dumps(analyse_json, indent=2, ensure_ascii=False))
-
-                return {
-                    "status": "SUCCESS",
-                    "res_llm": analyse_json
-                }
-
-            except Exception as e:
-                # Si extraction ou parsing échoue → renvoyer le texte brut
-                print("📝 Réponse reçue (format texte) :")
-                # print(result)
-                return {
-                    "status": "SUCCESS",
-                    "res_llm": result
-                }
-
+            print("📊 Analyse structurée reçue :")
+            print(json.dumps(result, indent=2, ensure_ascii=False))
+            return {
+                "status": "SUCCESS",
+                "res_llm": result
+            }
         else:
             print("❌ Aucun résultat de l'analyse LLM")
             return {
@@ -226,7 +207,7 @@ def lancer_traitement_restitution(restitution_id):
                 "requete_sql": requete_sql_ctx,
             }
 
-        print("\n\n[---] GEN LOGIC VAL ET PARAMS : res_gls = ", res_gls)
+        # print("\n\n[---] GEN LOGIC VAL ET PARAMS : res_gls = ", res_gls)
 
         grammar_path = os.path.join(os.path.dirname(__file__), "lark", "grammar.lark")
         with open(grammar_path, "r", encoding="utf-8") as f:
@@ -244,7 +225,7 @@ def lancer_traitement_restitution(restitution_id):
                 alias = op_data["as_nom"]
                 tree = parser.parse(text)
 
-                print(f"[---] requete_sql: {requete_sql_ctx}")
+                # print(f"[---] requete_sql: {requete_sql_ctx}")
                 if requete_sql_ctx:
                     result = executeur_requete(requete_sql_ctx)
                     api_data = result["api_data"]
@@ -286,7 +267,7 @@ def lancer_traitement_restitution(restitution_id):
 
                 result = CustomTransformer(api_data, variance_sample, percentile, tc_date_key, tc_global_rate).transform(tree)
 
-                print(f"[---] result CT: {result}")
+                # print(f"[---] result CT: {result}")
                 if isinstance(result, list) and all(isinstance(r, dict) for r in result):
                     for r in result:
                         value_key = [k for k in r.keys() if isinstance(r[k], (int, float, Decimal, list))]
@@ -303,7 +284,7 @@ def lancer_traitement_restitution(restitution_id):
             except Exception as e:
                 print("Erreur :", e)
 
-        print("\n\n[---] RESCALC : resultats_op = ", resultats_op)
+        # print("\n\n[---] RESCALC : resultats_op = ", resultats_op)
 
         # --- Étape 4 : Mise en forme des résultats ---
         try:
@@ -318,7 +299,7 @@ def lancer_traitement_restitution(restitution_id):
                 "requete_sql": requete_sql_ctx,
             }
 
-        print("\n\n[---] RESFINL : resultats_final = ", resultats_final)
+        # print("\n\n[---] RESFINL : resultats_final = ", resultats_final)
 
         # APPEL AU LLM — construction du payload (toujours, même si status_llm=False)
         res_llm_id = 0
@@ -327,7 +308,15 @@ def lancer_traitement_restitution(restitution_id):
         print("[--] status_llm = ", restitution.status_llm)
 
         entrepot_de_donnee = req_data["api_data"]
-        resultat_calcul = resultats_final["resultats_final"]
+        resultat_calcul_full = resultats_final["resultats_final"]
+
+        # Plafonner les données envoyées au LLM pour éviter les millions de tokens
+        LLM_MAX_ROWS = 300
+        if isinstance(resultat_calcul_full, list) and len(resultat_calcul_full) > LLM_MAX_ROWS:
+            print(f"[TASK] LLM : troncature {len(resultat_calcul_full)} → {LLM_MAX_ROWS} lignes")
+            resultat_calcul = resultat_calcul_full[:LLM_MAX_ROWS]
+        else:
+            resultat_calcul = resultat_calcul_full
 
         schema = {}
         for item in champs_data:
