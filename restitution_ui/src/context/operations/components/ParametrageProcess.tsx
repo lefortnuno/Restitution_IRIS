@@ -463,7 +463,7 @@ export const ParametrageProcess: React.FC<PrametrageProcessProps> = ({
               type="checkbox"
               checked={varianceSimple}
               onChange={() => setVarianceSimple(!varianceSimple)}
-              className="sr-only peer"
+              className="sr-only peer accent-blue-600"
             />
             <div className="w-10 h-6 bg-gray-300 rounded-full peer-checked:bg-teal-600 transition duration-300"></div>
             <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform duration-300"></div>
@@ -563,7 +563,7 @@ export const ParametrageProcess: React.FC<PrametrageProcessProps> = ({
                                       type="checkbox"
                                       readOnly
                                       checked={dateTCKey === fullKey}
-                                      className="h-4 w-4 text-teal-600 border-gray-300 rounded"
+                                      className="h-4 w-4 text-teal-600 border-gray-300 rounded accent-blue-600"
                                     />
                                     <span className="flex-1 truncate">
                                       {attr.name}
@@ -598,7 +598,7 @@ export const ParametrageProcess: React.FC<PrametrageProcessProps> = ({
                 type="checkbox"
                 checked={tcGlobal}
                 onChange={() => setTCGlobal(!tcGlobal)}
-                className="sr-only peer"
+                className="sr-only peer accent-blue-600"
               />
               <div className="w-10 h-6 bg-gray-300 rounded-full peer-checked:bg-teal-600 transition duration-300"></div>
               <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-4 transition-transform duration-300"></div>

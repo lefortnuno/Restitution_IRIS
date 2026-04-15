@@ -7,40 +7,59 @@ type BackendError = string | {
 
 interface ErrorStateProps {
   error: BackendError;
+  msgP?: string;
   onRetry?: () => void;
 }
 
-export function ErrorState({ error, onRetry }: ErrorStateProps) {
+export function ErrorState({ error, msgP, onRetry }: ErrorStateProps) {
   const errorObj =
     typeof error === "string"
       ? { message: error }
       : error;
 
+  const handleCopy = () => {
+    const content = [
+      msgP               ? `Message : ${msgP}`                          : null,
+      errorObj.message   ? `Détail : ${errorObj.message}`               : null,
+      errorObj.sqlstate  ? `SQLSTATE : ${errorObj.sqlstate}`            : null,
+      errorObj.pgerror   ? `Erreur PostgreSQL : ${errorObj.pgerror}`    : null,
+      errorObj.requete_sql ? `Requête SQL : ${errorObj.requete_sql}`    : null,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    navigator.clipboard.writeText(content);
+  };
+
   return (
     <div className="max-w-4xl mx-auto mt-10 border border-red-200 bg-red-50 rounded-xl shadow-sm">
-      
+
       {/* Header */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-red-200">
-        <span className="text-red-600 text-2xl"></span>
         <h2 className="text-lg font-semibold text-red-700">
+          <span className="text-red-600 text-2xl mr-4">⚠️</span>
           Une erreur est survenue lors du traitement
         </h2>
       </div>
 
-      {/* Message principal */} 
-      <div className="px-6 py-4 text-red-800 whitespace-pre-wrap">
-        {errorObj.message || "Une erreur inattendue est survenue."}
-      </div>
-
+      {/* Message contextuel (étape d'échec) */}
+      {msgP && (
+        <div className="px-6 py-3 text-red-900 font-medium border-b border-red-100">
+          {msgP}
+        </div>
+      )}
 
       {/* Détails techniques */}
       <details className="px-6 pb-4">
-        <summary className="cursor-pointer text-sm text-red-700 font-medium">
+        <summary className="cursor-pointer text-sm text-red-700 font-medium mt-3">
           Détails techniques
         </summary>
 
         <div className="mt-3 bg-white border border-red-200 rounded-lg p-4 text-sm text-gray-800 space-y-2">
-          
+
+          <div className="text-red-800 whitespace-pre-wrap">
+            {errorObj.message || "Une erreur inattendue est survenue."}
+          </div>
+
           {errorObj.sqlstate && (
             <div>
               <span className="font-semibold">SQLSTATE :</span>{" "}
@@ -80,14 +99,10 @@ export function ErrorState({ error, onRetry }: ErrorStateProps) {
         )}
 
         <button
-          onClick={() =>
-            navigator.clipboard.writeText(
-              JSON.stringify(errorObj, null, 2)
-            )
-          }
+          onClick={handleCopy}
           className="px-4 py-2 rounded-md border border-red-300 text-red-700 hover:bg-red-100 transition"
         >
-          Copier l’erreur
+          Copier l'erreur
         </button>
       </div>
     </div>

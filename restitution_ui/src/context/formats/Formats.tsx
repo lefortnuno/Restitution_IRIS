@@ -206,7 +206,7 @@ export default function FormatSelectField({
                         type="checkbox"
                         checked={isChecked}
                         readOnly
-                        className="shrink-0 h-4 w-4 text-teal-600 border-gray-300 rounded"
+                        className="shrink-0 h-4 w-4 text-teal-600 border-gray-300 rounded accent-blue-600"
                       />
                       <span className="text-gray-800 truncate w-full">
                         {format.name}

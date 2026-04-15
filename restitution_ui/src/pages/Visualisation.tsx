@@ -7,6 +7,7 @@ import {
   getRestitution,
   checkTaskStatus,
   checkTableTaskStatus,
+  relancerLLM,
 } from "@/components/queries/useVisualisation";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -63,9 +64,12 @@ export default function Visualisation() {
   const [data, setData] = useState<any[]>([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [error, setError] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
   const [totalPages, setTotalPages] = useState(0);
+  const [manualLlmTaskId, setManualLlmTaskId] = useState<string | null>(null);
+  const [llmTriggering, setLlmTriggering] = useState(false);
 
   const launch = useMutation({
     mutationFn: async () => {
@@ -91,7 +95,7 @@ export default function Visualisation() {
               resolve(statusRes.result);
             } else if (statusRes.status === "FAILURE") {
               clearInterval(interval);
-              reject("Erreur lors de l'exécution du calcul.");
+              reject(statusRes.result ?? "Erreur lors de l'exécution du calcul.");
             }
           }, 2000);
         });
@@ -104,7 +108,7 @@ export default function Visualisation() {
               resolve(statusRes.result);
             } else if (statusRes.status === "FAILURE") {
               clearInterval(interval);
-              reject("Erreur lors de l'exécution du calcul.");
+              reject(statusRes.result ?? "Erreur lors de l'exécution du calcul.");
             }
           }, 2000);
         });
@@ -119,7 +123,7 @@ export default function Visualisation() {
       setLoading(false);
     },
     onError: (err: any) => {
-      setError(String(err));
+      setError(err ?? "Erreur lors de l'exécution du calcul.");
       setLoading(false);
     },
   });
@@ -130,8 +134,10 @@ export default function Visualisation() {
     setCount(0);
     setTotalPages(0);
     setLoading(true);
-    setError("");
+    setError(null);
     setRestitutionTaskID("");
+    setManualLlmTaskId(null);
+    setLlmTriggering(false);
     launch.mutate();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restitutionId]);
@@ -167,9 +173,10 @@ export default function Visualisation() {
 
   // 🔄 Rendu dynamique selon le type d'affichage
   const renderComponent = () => {
-    const ia = result?.llm_generative_task_id ? (
+    const activeLlmTaskId = manualLlmTaskId || (result?.llm_generative_task_id !== 0 ? result?.llm_generative_task_id : null);
+    const ia = activeLlmTaskId ? (
       <IAAnalysisResult
-        llmTaskId={result.llm_generative_task_id}
+        llmTaskId={activeLlmTaskId}
         llmmodele={result.llmmodele}
         restitutionId={Number(restitutionId)}
         restitutionTaskId={restitutionTaskID}
@@ -299,9 +306,10 @@ export default function Visualisation() {
 
             {error && (
               <ErrorState
-                error={error}
+                error={typeof error === "object" ? error : String(error)}
+                msgP={typeof error === "object" ? error?.msgP : undefined}
                 onRetry={() => {
-                  setError("");
+                  setError(null);
                   setLoading(true);
                   setResult(null);
                   launch.mutate();
@@ -309,7 +317,7 @@ export default function Visualisation() {
               />
             )}
 
-            {result && (
+            {result && !error && (
               <>
                 {renderComponent()}
 
@@ -319,28 +327,51 @@ export default function Visualisation() {
 
                 <br />
                 <div className="px-4 sm:px-6 lg:px-8">
-                  {result?.llm_generative_task_id !== undefined &&
-                    result?.llm_generative_task_id !== 0 &&
-                    (result?.affichage === "Tableau croisée dynamique" ||
-                      result?.affichage === "Tableau simple") && (
-                      <IAAnalysisResult
-                        llmTaskId={result.llm_generative_task_id}
-                        llmmodele={result.llmmodele}
-                        restitutionId={Number(restitutionId)}
-                        restitutionTaskId={restitutionTaskID}
-                        exportMode
-                      />
-                    )}
+                  {(() => {
+                    const activeLlmTaskId = manualLlmTaskId || (result?.llm_generative_task_id !== 0 ? result?.llm_generative_task_id : null);
+                    const isTableAffichage = result?.affichage === "Tableau croisée dynamique" || result?.affichage === "Tableau simple";
 
-                  {result?.llm_generative_task_id === 0 && (
-                    <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200 space-y-6">
-                      <div className="bg-red-100 p-6">
-                        <p className="text-sm text-gray-500 italic">
-                          Modèle analyse IA désactivé
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    if (activeLlmTaskId && isTableAffichage) {
+                      return (
+                        <IAAnalysisResult
+                          llmTaskId={activeLlmTaskId}
+                          llmmodele={result.llmmodele}
+                          restitutionId={Number(restitutionId)}
+                          restitutionTaskId={restitutionTaskID}
+                          exportMode
+                        />
+                      );
+                    }
+
+                    if (result?.llm_generative_task_id === 0 && !manualLlmTaskId) {
+                      return (
+                        <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
+                          <p className="text-sm text-gray-500 italic">
+                            Modèle analyse IA désactivé
+                          </p>
+                          <button
+                            disabled={llmTriggering}
+                            onClick={async () => {
+                              setLlmTriggering(true);
+                              try {
+                                const res = await relancerLLM(Number(restitutionId), restitutionTaskID);
+                                setManualLlmTaskId(res.llm_task_id);
+                              } catch {
+                                /* silencieux */
+                              } finally {
+                                setLlmTriggering(false);
+                              }
+                            }}
+                            className="ml-4 inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 rounded-md transition-colors"
+                          >
+                            {llmTriggering ? "Lancement…" : "Lancer l'analyse IA"}
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })()}
                 </div>
               </>
             )}

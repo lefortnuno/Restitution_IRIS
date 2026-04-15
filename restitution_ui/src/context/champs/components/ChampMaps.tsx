@@ -23,10 +23,10 @@ export const ChampsMaps = ({
   const options = ["Pays", "Ville"];
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [selectedCatManual, setSelectedCatManual] = useState<string | null>(
-    null
+    null,
   );
   const [selectedAxe, setSelectedAxe] = useState<keyof typeof AXES | null>(
-    null
+    null,
   );
 
   const { getValues, setValue } = useFormContext();
@@ -36,15 +36,17 @@ export const ChampsMaps = ({
 
   // État dérivé depuis les champs (source de vérité)
   const hasLatitude = champs.some(
-    (val) => val.transformation?.type === "lat" || val.type === "lat"
+    (val) => val.transformation?.type === "lat" || val.type === "lat",
   );
-  const hasLongitude = champs.some((val) => val.transformation?.type === "lon"|| val.type === "lon");
+  const hasLongitude = champs.some(
+    (val) => val.transformation?.type === "lon" || val.type === "lon",
+  );
   const hasBoth = hasLatitude && hasLongitude;
   const hasMaps = champs.some(
-    (val) => val.transformation?.type === "maps" || val.type === "maps"
+    (val) => val.transformation?.type === "maps" || val.type === "maps",
   );
   const hasManual = champs.some(
-    (val) => val.transformation?.type === "manual" || val.type === "manual"
+    (val) => val.transformation?.type === "manual" || val.type === "manual",
   );
 
   // Règle d'exclusivité : si coords (lat/lon/maps) présents -> manuel désactivé; si manuel présent -> coords désactivé
@@ -53,13 +55,13 @@ export const ChampsMaps = ({
 
   const selectedAttributsLatitude = champs
     .filter(
-      (item) => item.transformation?.type === "lat" || item.type === "lat"
+      (item) => item.transformation?.type === "lat" || item.type === "lat",
     )
     .map((item) => item.transformation?.parametre || item.parametre);
 
   const selectedAttributsLongitude = champs
     .filter(
-      (item) => item.transformation?.type === "lon" || item.type === "lon"
+      (item) => item.transformation?.type === "lon" || item.type === "lon",
     )
     .map((item) => item.transformation?.parametre || item.parametre);
 
@@ -74,7 +76,7 @@ export const ChampsMaps = ({
           (champ.transformation?.type === "manual" ||
             champ.type === "manual") &&
           !(champ.typeAttribut && champ.typeAttribut.startsWith("op_"))
-        )
+        ),
     );
 
     // Nouveau champ manuel
@@ -114,7 +116,7 @@ export const ChampsMaps = ({
 
             // Vérifier si un champ "maps" existe déjà
             const existingIndex = champs.findIndex(
-              (c: ChampsAVC) => c.type === "maps" && c.as_nom === "maps-niv"
+              (c: ChampsAVC) => c.type === "maps" && c.as_nom === "maps-niv",
             );
 
             let updatedChamps: ChampsAVC[];
@@ -133,7 +135,7 @@ export const ChampsMaps = ({
                         parametre: `maps.${op}`,
                       },
                     }
-                  : c
+                  : c,
               );
             } else {
               // Ajout si aucune entrée "maps" n'existe
@@ -248,8 +250,8 @@ export const ChampsMaps = ({
                                 .filter(
                                   (attr) =>
                                     !["date", "boolean"].includes(
-                                      attr.type.toLowerCase()
-                                    )
+                                      attr.type.toLowerCase(),
+                                    ),
                                 )
                                 .map((attr) => {
                                   const fullAttr = `${formatName}.${attr.name}`;
@@ -268,17 +270,17 @@ export const ChampsMaps = ({
                                         ch.type === type.value) &&
                                       (ch.transformation?.parametre ===
                                         fullAttr ||
-                                        ch.parametre === fullAttr)
+                                        ch.parametre === fullAttr),
                                   );
 
                                   const isUsedInOtherAxe =
                                     (selectedAxe === "latitude" &&
                                       selectedAttributsLongitude.includes(
-                                        fullAttr
+                                        fullAttr,
                                       )) ||
                                     (selectedAxe === "longitude" &&
                                       selectedAttributsLatitude.includes(
-                                        fullAttr
+                                        fullAttr,
                                       ));
 
                                   const isDisabled =
@@ -327,7 +329,7 @@ export const ChampsMaps = ({
                                           const updatedChamps = champs
                                             .filter(
                                               (i: ChampsAVC) =>
-                                                i.as_nom !== as_nom
+                                                i.as_nom !== as_nom,
                                             )
                                             .concat(newChamp);
 
@@ -335,6 +337,7 @@ export const ChampsMaps = ({
 
                                           if (onClose && !hasBoth) onClose();
                                         }}
+                                        className="cursor-pointer accent-blue-600"
                                       />
                                       <span className="truncate">
                                         {attr.name}
@@ -349,9 +352,9 @@ export const ChampsMaps = ({
                           )}
                         </div>
                       );
-                    })
+                    }),
                   )
-                : null
+                : null,
             )}
           </div>
         )}
@@ -377,7 +380,7 @@ export const ChampsMaps = ({
                       className="cursor-pointer pl-4 py-1 flex items-center justify-between font-medium text-gray-700 hover:text-teal-600 transition"
                       onClick={() =>
                         setSelectedCatManual(
-                          selectedCatManual === formatName ? null : formatName
+                          selectedCatManual === formatName ? null : formatName,
                         )
                       }
                     >
@@ -395,8 +398,8 @@ export const ChampsMaps = ({
                           .filter(
                             (attr) =>
                               !["date", "boolean"].includes(
-                                attr.type.toLowerCase()
-                              )
+                                attr.type.toLowerCase(),
+                              ),
                           )
                           .map((attr) => {
                             const concat_attribut = `${formatName}.${attr.name}`;
@@ -407,7 +410,7 @@ export const ChampsMaps = ({
                                 (ch.transformation?.type == "manual" ||
                                   ch.type == "manual") &&
                                 (ch.transformation?.parametre ||
-                                  ch.parametre) == concat_attribut
+                                  ch.parametre) == concat_attribut,
                             );
 
                             return (
@@ -425,7 +428,7 @@ export const ChampsMaps = ({
                                       // Ajout
                                       handleAddManual(
                                         concat_attribut,
-                                        attr.type
+                                        attr.type,
                                       );
                                     } else {
                                       // Suppression
@@ -433,12 +436,12 @@ export const ChampsMaps = ({
                                         champs.filter(
                                           (c) =>
                                             c.as_nom !==
-                                            `manual-${concat_attribut}`
-                                        )
+                                            `manual-${concat_attribut}`,
+                                        ),
                                       );
                                     }
                                   }}
-                                  className="cursor-pointer"
+                                  className="cursor-pointer accent-blue-600"
                                 />
                                 <span>{attr.name}</span>
                                 <span className="text-xs text-gray-400">
@@ -450,9 +453,9 @@ export const ChampsMaps = ({
                       </div>
                     )}
                   </div>
-                ))
+                )),
               )
-            : null
+            : null,
         )}
       </div>
     </div>

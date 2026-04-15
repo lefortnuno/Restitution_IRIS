@@ -226,6 +226,15 @@ class RestitutionViewSet(viewsets.ModelViewSet):
             })
 
         result_data = result.result
+
+        # Handle explicit FAILURE dict returned by the task (task succeeded from Celery POV)
+        if isinstance(result_data, dict) and result_data.get("status") == "FAILURE":
+            return Response({
+                "task_id": task_id,
+                "status": "FAILURE",
+                "result": result_data,
+            })
+
         restitution_id = result_data.get("id")
         try:
             instance = Restitutions.objects.get(id=restitution_id)

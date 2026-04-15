@@ -67,12 +67,12 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
           const currentClause = currentExpr.clause_regroupement ?? [];
 
           const alreadySelected = currentClause.some(
-            (item: any) => item.champs_cible === attribut
+            (item: any) => item.champs_cible === attribut,
           );
 
           const newClauseRegroupement = alreadySelected
             ? currentClause.filter(
-                (item: any) => item.champs_cible !== attribut
+                (item: any) => item.champs_cible !== attribut,
               ) // suppression
             : [...currentClause, { champs_cible: attribut }];
           setNbrGoupBY(alreadySelected ? nbrGroupBY - 1 : nbrGroupBY + 1);
@@ -113,7 +113,7 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
           const existingClause = targetExpr.clause_regroupement ?? [];
 
           const alreadySelected = existingClause.some(
-            (item) => item.champs_cible === attribut
+            (item) => item.champs_cible === attribut,
           );
 
           const newClauseRegroupement = alreadySelected
@@ -168,13 +168,13 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
           const existingClause = targetExpr.clause_regroupement ?? [];
 
           const alreadySelected = existingClause.some(
-            (item) => item.champs_cible === attribut
+            (item) => item.champs_cible === attribut,
           );
 
           const newClauseRegroupement = alreadySelected
             ? existingClause.filter((item) => item.champs_cible !== attribut)
             : [...existingClause, { champs_cible: attribut }];
-            
+
           // MAJ de l'expression cible
           const updatedChampCible = {
             ...targetExpr,
@@ -221,12 +221,12 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
           updatedExpressions.push(
             {
               valeur: null,
-              operateur_arithmetique: ")", 
+              operateur_arithmetique: ")",
             },
             {
               valeur: null,
-              operateur_arithmetique: ")", 
-            }
+              operateur_arithmetique: ")",
+            },
           );
 
           return {
@@ -288,12 +288,12 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
           updatedChampsCible.push(
             {
               valeur: null,
-              operateur_arithmetique: ")", 
+              operateur_arithmetique: ")",
             },
             {
               valeur: null,
-              operateur_arithmetique: ")", 
-            }
+              operateur_arithmetique: ")",
+            },
           );
           updatedConditions[targetIndex] = {
             ...targetCond,
@@ -344,12 +344,12 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
           updatedChampsCible.push(
             {
               valeur: null,
-              operateur_arithmetique: ")", 
+              operateur_arithmetique: ")",
             },
             {
               valeur: null,
-              operateur_arithmetique: ")", 
-            }
+              operateur_arithmetique: ")",
+            },
           );
           updatedConditions[targetIndex] = {
             ...targetCond,
@@ -382,7 +382,7 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
   const isAlreadySelected = (attribut: string): boolean => {
     const currentOps = getValues("operation_selected") || [];
     const currentOp = currentOps.find(
-      (op: OperationType) => op.as_nom === currentOperation
+      (op: OperationType) => op.as_nom === currentOperation,
     );
     if (!currentOp) return false;
 
@@ -400,7 +400,7 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
     }
 
     if (extraStep.startsWith("supr_cond2_attr_")) {
-      const cond = currentOp.conditions?.[suprcond1Save]; 
+      const cond = currentOp.conditions?.[suprcond1Save];
       const champ = cond?.valeur_reference?.[suprcond2SaveChamp];
       const selectedAttrs = champ?.clause_regroupement ?? [];
       return selectedAttrs.some((item: any) => item.champs_cible === attribut);
@@ -435,7 +435,7 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
                     className="cursor-pointer py-1 flex items-center justify-between font-medium text-gray-700 hover:text-teal-600 transition"
                     onClick={() =>
                       setSelectedCat(
-                        selectedCat === formatName ? null : formatName
+                        selectedCat === formatName ? null : formatName,
                       )
                     }
                     title={formatName}
@@ -474,7 +474,7 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
                               type="checkbox"
                               checked={alreadySelected}
                               readOnly
-                              className="shrink-0 h-4 w-4 text-teal-600 border-gray-300 rounded"
+                              className="shrink-0 h-4 w-4 text-teal-600 border-gray-300 rounded accent-blue-600"
                             />
                             <span className="truncate">{attr.name}</span>
                             <span className="text-xs text-gray-400">
@@ -486,9 +486,9 @@ export const GroupByProcess: React.FC<AttributProcessProps> = ({
                     </div>
                   )}
                 </div>
-              ))
+              )),
             )
-          : null
+          : null,
       )}
     </>
   );

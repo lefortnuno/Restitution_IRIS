@@ -101,7 +101,7 @@ export const AttributAggregations: React.FC<AttributProcessProps> = ({
                               type="checkbox"
                               checked={alreadySelected}
                               readOnly
-                              className="shrink-0 h-4 w-4 text-teal-600 border-gray-300 rounded"
+                              className="shrink-0 h-4 w-4 text-teal-600 border-gray-300 rounded accent-blue-600"
                             />
                             <span className="truncate">{attr.name}</span>
                             <span className="text-xs text-gray-400">

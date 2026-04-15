@@ -85,257 +85,290 @@ def lancer_llm_async(payload):
 
 
 @app.task
-def lancer_traitement_restitution(restitution_id): 
-    restitution = Restitutions.objects.get(id=restitution_id)  
+def lancer_traitement_restitution(restitution_id):
+    requete_sql_ctx = None  # conservé pour l'inclure dans les erreurs
+    try:
+        restitution = Restitutions.objects.get(id=restitution_id)
 
-    affichage = restitution.affichages.first() 
-    llmmodele = restitution.llmmodeles.first() 
-    champs = restitution.champs.all().order_by("id")
-    formats = restitution.formats_selected.all().order_by("id")
-    jointures = restitution.jointures.all().order_by("id")
-    filtres = restitution.filtres_pop.all().order_by("id")
-    operations = restitution.operation_selected.all().order_by("id") 
+        affichage = restitution.affichages.first()
+        llmmodele = restitution.llmmodeles.first()
+        champs = restitution.champs.all().order_by("id")
+        formats = restitution.formats_selected.all().order_by("id")
+        jointures = restitution.jointures.all().order_by("id")
+        filtres = restitution.filtres_pop.all().order_by("id")
+        operations = restitution.operation_selected.all().order_by("id")
 
-    def sort_lists(obj):
-                if isinstance(obj, list):
-                    # Si la liste contient des dictionnaires avec un champ "id"
-                    if all(isinstance(item, dict) and "id" in item for item in obj):
-                        obj = sorted(obj, key=lambda x: x["id"])
-                    # Appliquer récursivement sur chaque élément
-                    return [sort_lists(item) for item in obj]
-                elif isinstance(obj, dict):
-                    return {k: sort_lists(v) for k, v in obj.items()}
-                return obj
-     
-    affichage_data = affichage.nom_affichage if affichage else None 
-    llmmodele_data = llmmodele.libelle_llm if llmmodele else None 
-    champs_data =  ChampsSerializer(champs, many=True).data 
-    formats_data = FormatSerializer(formats, many=True).data
-    jointures_data = JointuresSerializer(jointures, many=True).data
-    filtres_data = FiltrePopulationsSerializer(filtres, many=True).data 
-    operations_data = OperationsSerializer(operations, many=True).data  
-    
-    operations_data= sort_lists(operations_data)
-    list_champs = []
-    list_champs_front = []
-    list_champs_date = []
-    list_champ_groupBY = []
-    champs_axes = []
-    list_operation_name = ", ".join(op.get("as_nom", "") for op in operations_data) 
-    maps_traitement = ""
-    maps_champ_niv = ""
-    maps_champ_region = ""
-    
-    for c in champs_data:
-        champ_nom = c["nom"]
-        is_used_as_operation = any(champ_nom == op["as_nom"] for op in operations_data) 
+        def sort_lists(obj):
+                    if isinstance(obj, list):
+                        # Si la liste contient des dictionnaires avec un champ "id"
+                        if all(isinstance(item, dict) and "id" in item for item in obj):
+                            obj = sorted(obj, key=lambda x: x["id"])
+                        # Appliquer récursivement sur chaque élément
+                        return [sort_lists(item) for item in obj]
+                    elif isinstance(obj, dict):
+                        return {k: sort_lists(v) for k, v in obj.items()}
+                    return obj
 
-        if not is_used_as_operation:
-            list_champ_groupBY.append(champ_nom)
+        affichage_data = affichage.nom_affichage if affichage else None
+        llmmodele_data = llmmodele.libelle_llm if llmmodele else None
+        champs_data = ChampsSerializer(champs, many=True).data
+        formats_data = FormatSerializer(formats, many=True).data
+        jointures_data = JointuresSerializer(jointures, many=True).data
+        filtres_data = FiltrePopulationsSerializer(filtres, many=True).data
+        operations_data = OperationsSerializer(operations, many=True).data
 
-    for c in formats_data:  
-        structure = get_structures_table(c["id_structure"]) 
-        name = c["name_structure"] 
+        operations_data = sort_lists(operations_data)
+        list_champs = []
+        list_champs_front = []
+        list_champs_date = []
+        list_champ_groupBY = []
+        champs_axes = []
+        list_operation_name = ", ".join(op.get("as_nom", "") for op in operations_data)
+        maps_traitement = ""
+        maps_champ_niv = ""
+        maps_champ_region = ""
 
-        for attribut in structure:
-            col = attribut["name"]
-            type = attribut["type"].strip().lower() # "type" depuis l'entrepot de donnee 
-
-            if type == "date": 
-                champ = f'TO_CHAR({name}."{col}", \'DD-MM-YYYY\') AS "{name}.{col}"' 
-                list_champs_date.append(f'{name}."{col}" IS NOT NULL')  
-            elif type == "varchar": 
-                champ = f"COALESCE({name}.\"{col}\", ' ') AS \"{name}.{col}\""
-            elif type == "integer":  
-                champ = f'COALESCE({name}."{col}", 0) AS "{name}.{col}"'
-            else:
-                champ = f'{name}."{col}" AS "{name}.{col}"'
-            list_champs.append(champ) 
- 
-    req_data = recuperer_donnees_entrepot(formats=formats_data, champs=list_champs, jointures= jointures_data, filtres=filtres_data, filtres_date=list_champs_date)
-
-    # print(f"\n\n[ --- ] req_data = {req_data}\n\n")
-
-    requete_sql = req_data["requete_sql"] 
-    print("\n\n[- TASK -] requete_sql", requete_sql)
-    api_data = req_data["api_data"]
-    api_data_original = api_data    
-     
-    if affichage_data.strip().lower() in ["histogramme", "graphique linéaire"]: 
-        list_champ_groupBY_axes = []
-        
         for c in champs_data:
             champ_nom = c["nom"]
-            champ_type = c["type"]
-            champ_typeAttribut = c["typeAttribut"]
             is_used_as_operation = any(champ_nom == op["as_nom"] for op in operations_data)
-            
-            if not is_used_as_operation and champ_type != "AxesY":
-                list_champ_groupBY_axes.append(champ_nom)
-                champs_axes.append({
-                    "champ_type": champ_type,
-                    "champ_typeAttribut": champ_typeAttribut,
-                    "champ_nom": champ_nom
-                })
-                
-        res_gls = generate_logic_string(operations_data, list_champ_groupBY_axes, api_data,requete_sql)
-        logic_operation = res_gls["result"] 
-        params_operation = res_gls["params"] 
 
-    elif affichage_data.strip().lower() in ["cartographie"]:  
-        champ_region = next((ch["parametre"] for ch in champs_data if ch["type"] == "manual"), None)
-        champ_lat = next((ch["parametre"] for ch in champs_data if ch["type"] == "lat"), None)
-        champ_lon = next((ch["parametre"] for ch in champs_data if ch["type"] == "lon"), None)
-        champ_niv = next((ch["parametre"] for ch in champs_data if (ch["type"] == "maps" or ch["type"] == "manual") and ch["as_nom"] == "maps-niv"), None) 
-        champ_lat_lon_grpby = [] 
-        maps_champ_niv = champ_niv  
-        if champ_lat and champ_lon:  
-            champ_lat_lon_grpby.append(champ_niv) 
-        else: 
-            champ_lat_lon_grpby.append(champ_region) 
-        res_gls = generate_logic_string(operations_data, champ_lat_lon_grpby, api_data,requete_sql) 
-        logic_operation = res_gls["result"] 
-        params_operation = res_gls["params"]  
-         
-    else:   
-        res_gls = generate_logic_string(operations_data, list_champ_groupBY, api_data, requete_sql)   
-        logic_operation = res_gls["result"] 
-        params_operation = res_gls["params"]  
+            if not is_used_as_operation:
+                list_champ_groupBY.append(champ_nom)
 
-    print("\n\n[---] GEN LOGIC VAL ET PARAMS : res_gls = ", res_gls)
- 
-    grammar_path = os.path.join(os.path.dirname(__file__), "lark", "grammar.lark")
-    with open(grammar_path, "r", encoding="utf-8") as f:
-        grammar_text = f.read() 
+        for c in formats_data:
+            structure = get_structures_table(c["id_structure"])
+            name = c["name_structure"]
 
-    parser = Lark(grammar_text, parser="lalr", start="start") 
-    
-    resultats_op= []
-    for logic, op_data, params in zip(logic_operation, operations_data, params_operation):
-        try: 
-            text = logic["operation"] 
-            requete_sql = logic["requete_sql"]  
-            nom_op = logic["nomOP"]
-            alias = op_data["as_nom"]
-            tree = parser.parse(text) 
+            for attribut in structure:
+                col = attribut["name"]
+                type = attribut["type"].strip().lower()  # "type" depuis l'entrepot de donnee
 
-            print(f"[---] requete_sql: {requete_sql}")
-            if requete_sql:
-                result = executeur_requete(requete_sql) 
-                api_data = result["api_data"] 
-            else:
-                api_data = api_data_original  
+                if type == "date":
+                    champ = f'TO_CHAR({name}."{col}", \'DD-MM-YYYY\') AS "{name}.{col}"'
+                    list_champs_date.append(f'{name}."{col}" IS NOT NULL')
+                elif type == "varchar":
+                    champ = f"COALESCE({name}.\"{col}\", ' ') AS \"{name}.{col}\""
+                elif type == "integer":
+                    champ = f'COALESCE({name}."{col}", 0) AS "{name}.{col}"'
+                else:
+                    champ = f'{name}."{col}" AS "{name}.{col}"'
+                list_champs.append(champ)
 
-            if affichage_data.strip().lower() in ["cartographie"]:
+        # --- Étape 1 : Récupération des données ---
+        try:
+            req_data = recuperer_donnees_entrepot(formats=formats_data, champs=list_champs, jointures=jointures_data, filtres=filtres_data, filtres_date=list_champs_date)
+        except Exception as e:
+            print("[TASK] Erreur récupération données :", e)
+            return {
+                "status": "FAILURE",
+                "id": restitution_id,
+                "msgP": "Échec lors de la récupération des données depuis l'entrepôt.",
+                "message": str(e),
+            }
+
+        # print(f"\n\n[ --- ] req_data = {req_data}\n\n")
+
+        requete_sql_ctx = req_data["requete_sql"]
+        print("\n\n[- TASK -] requete_sql", requete_sql_ctx)
+        api_data = req_data["api_data"]
+        api_data_original = api_data
+
+        # --- Étape 2 : Construction des opérations ---
+        try:
+            if affichage_data.strip().lower() in ["histogramme", "graphique linéaire"]:
+                list_champ_groupBY_axes = []
+
+                for c in champs_data:
+                    champ_nom = c["nom"]
+                    champ_type = c["type"]
+                    champ_typeAttribut = c["typeAttribut"]
+                    is_used_as_operation = any(champ_nom == op["as_nom"] for op in operations_data)
+
+                    if not is_used_as_operation and champ_type != "AxesY":
+                        list_champ_groupBY_axes.append(champ_nom)
+                        champs_axes.append({
+                            "champ_type": champ_type,
+                            "champ_typeAttribut": champ_typeAttribut,
+                            "champ_nom": champ_nom
+                        })
+
+                res_gls = generate_logic_string(operations_data, list_champ_groupBY_axes, api_data, requete_sql_ctx)
+                logic_operation = res_gls["result"]
+                params_operation = res_gls["params"]
+
+            elif affichage_data.strip().lower() in ["cartographie"]:
                 champ_region = next((ch["parametre"] for ch in champs_data if ch["type"] == "manual"), None)
                 champ_lat = next((ch["parametre"] for ch in champs_data if ch["type"] == "lat"), None)
                 champ_lon = next((ch["parametre"] for ch in champs_data if ch["type"] == "lon"), None)
-                champ_niv = next((ch["parametre"] for ch in champs_data if ch["type"] == "maps" and ch["as_nom"] == "maps-niv"), None) 
-                
-                if champ_lat and champ_lon:   
-                    maps_traitement = "coordonnees"
-                    new_api_data = []
-                    for row in api_data:
-                        lat_val = row.get(champ_lat)
-                        lon_val = row.get(champ_lon)
-
-                        if lat_val is not None and lon_val is not None:
-                            if champ_niv == "maps.Pays":
-                                geo_val = get_country(lat=lat_val, lon=lon_val)
-                            elif champ_niv == "maps.Ville":
-                                geo_val = get_state(lat=lat_val, lon=lon_val)
-                            else:
-                                geo_val = None
-
-                            if geo_val:
-                                new_row = row.copy()
-                                new_row[champ_niv] = geo_val  # création explicite de la colonne
-                                new_api_data.append(new_row)
-                    api_data = new_api_data 
+                champ_niv = next((ch["parametre"] for ch in champs_data if (ch["type"] == "maps" or ch["type"] == "manual") and ch["as_nom"] == "maps-niv"), None)
+                champ_lat_lon_grpby = []
+                maps_champ_niv = champ_niv
+                if champ_lat and champ_lon:
+                    champ_lat_lon_grpby.append(champ_niv)
                 else:
-                    maps_champ_region = champ_region
-                    maps_traitement = "manual"
+                    champ_lat_lon_grpby.append(champ_region)
+                res_gls = generate_logic_string(operations_data, champ_lat_lon_grpby, api_data, requete_sql_ctx)
+                logic_operation = res_gls["result"]
+                params_operation = res_gls["params"]
 
-            variance_sample, percentile, tc_date_key, tc_global_rate = params
-            percentile = percentile / 100
-            
-            result = CustomTransformer(api_data, variance_sample, percentile, tc_date_key, tc_global_rate).transform(tree) 
-            
-            print(f"[---] result CT: {result}") 
-            if isinstance(result, list) and all(isinstance(r, dict) for r in result):
-                for r in result:
-                    value_key = [k for k in r.keys() if isinstance(r[k], (int, float, Decimal, list))]
-                    if value_key and alias not in r:
-                        key = value_key[-1]
-                        val = r.pop(key)
-                        if isinstance(val, list):
-                            r[alias] = ", ".join(str(v) for v in val)
-                        elif isinstance(val, Decimal): 
-                            r[alias] = float(val) 
-                        else:
-                            r[alias] = val
-                resultats_op.append(result)
-        except Exception as e: 
-            print("Erreur :", e)  
-               
-    print("\n\n[---] RESCALC : resultats_op = ", resultats_op)
-    # print(f"\n\n[ --- ] resultats_op = {resultats_op}\n\n")
-    resultats_final = adjust_result_by_affichage(resultats_op=resultats_op, affichage=affichage_data, champs_axes=champs_axes, list_operation_name=list_operation_name, champ_niv=maps_champ_niv, champs_data=champs_data, maps_traitement=maps_traitement, maps_champ_region=maps_champ_region) 
-    # print(f"\n\n[ --- ] resultats_final = {resultats_final}\n\n")
-    
-    print("\n\n[---] RESFINL : resultats_final = ", resultats_final)
+            else:
+                res_gls = generate_logic_string(operations_data, list_champ_groupBY, api_data, requete_sql_ctx)
+                logic_operation = res_gls["result"]
+                params_operation = res_gls["params"]
 
-    # APPEL AU LLM OLLAMA 3:8b 
-    res_llm_id = 0
-    var_llm = restitution.status_llm
-    print("[--] var_llm = ", var_llm)
-    print("[--] status_llm = ", restitution.status_llm)
-    if var_llm is True:
+        except Exception as e:
+            print("[TASK] Erreur construction opérations :", e)
+            return {
+                "status": "FAILURE",
+                "id": restitution_id,
+                "msgP": "Échec lors du traitement des opérations sur l'entrepôt de données.",
+                "message": str(e),
+                "requete_sql": requete_sql_ctx,
+            }
+
+        print("\n\n[---] GEN LOGIC VAL ET PARAMS : res_gls = ", res_gls)
+
+        grammar_path = os.path.join(os.path.dirname(__file__), "lark", "grammar.lark")
+        with open(grammar_path, "r", encoding="utf-8") as f:
+            grammar_text = f.read()
+
+        parser = Lark(grammar_text, parser="lalr", start="start")
+
+        # --- Étape 3 : Exécution des calculs ---
+        resultats_op = []
+        for logic, op_data, params in zip(logic_operation, operations_data, params_operation):
+            try:
+                text = logic["operation"]
+                requete_sql_ctx = logic["requete_sql"]
+                nom_op = logic["nomOP"]
+                alias = op_data["as_nom"]
+                tree = parser.parse(text)
+
+                print(f"[---] requete_sql: {requete_sql_ctx}")
+                if requete_sql_ctx:
+                    result = executeur_requete(requete_sql_ctx)
+                    api_data = result["api_data"]
+                else:
+                    api_data = api_data_original
+
+                if affichage_data.strip().lower() in ["cartographie"]:
+                    champ_region = next((ch["parametre"] for ch in champs_data if ch["type"] == "manual"), None)
+                    champ_lat = next((ch["parametre"] for ch in champs_data if ch["type"] == "lat"), None)
+                    champ_lon = next((ch["parametre"] for ch in champs_data if ch["type"] == "lon"), None)
+                    champ_niv = next((ch["parametre"] for ch in champs_data if ch["type"] == "maps" and ch["as_nom"] == "maps-niv"), None)
+
+                    if champ_lat and champ_lon:
+                        maps_traitement = "coordonnees"
+                        new_api_data = []
+                        for row in api_data:
+                            lat_val = row.get(champ_lat)
+                            lon_val = row.get(champ_lon)
+
+                            if lat_val is not None and lon_val is not None:
+                                if champ_niv == "maps.Pays":
+                                    geo_val = get_country(lat=lat_val, lon=lon_val)
+                                elif champ_niv == "maps.Ville":
+                                    geo_val = get_state(lat=lat_val, lon=lon_val)
+                                else:
+                                    geo_val = None
+
+                                if geo_val:
+                                    new_row = row.copy()
+                                    new_row[champ_niv] = geo_val  # création explicite de la colonne
+                                    new_api_data.append(new_row)
+                        api_data = new_api_data
+                    else:
+                        maps_champ_region = champ_region
+                        maps_traitement = "manual"
+
+                variance_sample, percentile, tc_date_key, tc_global_rate = params
+                percentile = percentile / 100
+
+                result = CustomTransformer(api_data, variance_sample, percentile, tc_date_key, tc_global_rate).transform(tree)
+
+                print(f"[---] result CT: {result}")
+                if isinstance(result, list) and all(isinstance(r, dict) for r in result):
+                    for r in result:
+                        value_key = [k for k in r.keys() if isinstance(r[k], (int, float, Decimal, list))]
+                        if value_key and alias not in r:
+                            key = value_key[-1]
+                            val = r.pop(key)
+                            if isinstance(val, list):
+                                r[alias] = ", ".join(str(v) for v in val)
+                            elif isinstance(val, Decimal):
+                                r[alias] = float(val)
+                            else:
+                                r[alias] = val
+                    resultats_op.append(result)
+            except Exception as e:
+                print("Erreur :", e)
+
+        print("\n\n[---] RESCALC : resultats_op = ", resultats_op)
+
+        # --- Étape 4 : Mise en forme des résultats ---
+        try:
+            resultats_final = adjust_result_by_affichage(resultats_op=resultats_op, affichage=affichage_data, champs_axes=champs_axes, list_operation_name=list_operation_name, champ_niv=maps_champ_niv, champs_data=champs_data, maps_traitement=maps_traitement, maps_champ_region=maps_champ_region)
+        except Exception as e:
+            print("[TASK] Erreur mise en forme :", e)
+            return {
+                "status": "FAILURE",
+                "id": restitution_id,
+                "msgP": "Échec lors de la mise en forme des résultats.",
+                "message": str(e),
+                "requete_sql": requete_sql_ctx,
+            }
+
+        print("\n\n[---] RESFINL : resultats_final = ", resultats_final)
+
+        # APPEL AU LLM — construction du payload (toujours, même si status_llm=False)
+        res_llm_id = 0
+        var_llm = restitution.status_llm
+        print("[--] var_llm = ", var_llm)
+        print("[--] status_llm = ", restitution.status_llm)
+
         entrepot_de_donnee = req_data["api_data"]
-        resultat_calcul = resultats_final["resultats_final"] 
+        resultat_calcul = resultats_final["resultats_final"]
 
         schema = {}
         for item in champs_data:
             nom = item['nom']
             type_attribut = item['typeAttribut'] if item['typeAttribut'] else 'FLOAT'
-            schema[nom] = f"{type_attribut}" 
-        
+            schema[nom] = f"{type_attribut}"
+
         calculStat = {}
         for op in logic_operation:
-            calculStat[op['nomOP']] = f"{op['as_nom']} : {op['operation']}" 
+            calculStat[op['nomOP']] = f"{op['as_nom']} : {op['operation']}"
 
         title = restitution.nom or "Restitution sans nom"
-        affichage = affichage_data 
+        affichage = affichage_data
         llmmodele = llmmodele_data or "qwen/qwen3-32b"
         description = restitution.description or "Aucune description disponible"
-        
-        filtres =  ""
-        premiere_requete = res_gls['result'][0]['requete_sql']  
+
+        filtres = ""
+        premiere_requete = res_gls['result'][0]['requete_sql']
         if 'WHERE' in premiere_requete:
-            filtres = premiere_requete.split('WHERE')[1].strip() 
+            filtres = premiere_requete.split('WHERE')[1].strip()
         else:
-            filtres = "Aucun filtre appliquer" 
+            filtres = "Aucun filtre appliquer"
 
-        # Vous avez accès à des données de l'entrepôt de données pour maximiser l'analyse donc n'oublie pas de l'analyser car c'est un pre-requis. 
         prompte_systeme = f"""
-        [CONTEXTE]
-        Vous êtes un Analyste Senior expert en analyse de données. 
-        Votre rôle est d’interpréter les résultats statistiques fournis et d’en dégager des tendances utiles pour la prise de décision.
+    [CONTEXTE]
+    Vous êtes un Analyste Senior expert en analyse de données.
+    Votre rôle est d'interpréter les résultats statistiques fournis et d'en dégager des tendances utiles pour la prise de décision.
 
-        [OBJECTIF]
-        Fournir une analyse synthétique, claire et orientée métier des données transmises.
+    [OBJECTIF]
+    Fournir une analyse synthétique, claire et orientée métier des données transmises.
 
-        [CONTRAINTES]
-        - Votre sortie doit être au format JSON strict.
-        - Les sections suivantes doivent toujours être présentes : 
-        titre_analyse, tendances_cles, anomalies_possibles, resume_executif, ton analyse personnel.
-        - Réponse concise, sans explications hors JSON.
-        - Vous êtes rigoureux, neutre, et orienté performance.
+    [CONTRAINTES]
+    - Votre sortie doit être au format JSON strict.
+    - Les sections suivantes doivent toujours être présentes :
+    titre_analyse, tendances_cles, anomalies_possibles, resume_executif, ton analyse personnel.
+    - Réponse concise, sans explications hors JSON.
+    - Vous êtes rigoureux, neutre, et orienté performance.
 
-        [STYLE DE COMMUNICATION]
-        Professionnel, analytique et structuré.
-        """ 
-
+    [STYLE DE COMMUNICATION]
+    Professionnel, analytique et structuré.
+    """
 
         llm_payload = {
             "entrepot_de_donnee": entrepot_de_donnee,
@@ -347,31 +380,29 @@ def lancer_traitement_restitution(restitution_id):
             "filtres": filtres,
             "description": description,
             "prompte_systeme": prompte_systeme,
-            # "model": "llama-3.3-70b-versatile"
-            # "model": "qwen/qwen3-32b"
             "model": llmmodele
         }
-        task_llm = lancer_llm_async.delay(llm_payload)
-        res_llm_id = task_llm.id
-        print(f"\n\n[ --- ] TaskId: {res_llm_id} \n\n")
-   
-   
-    # ✅ Extraire les noms de champs à partir du premier élément 
-    if affichage_data.strip().lower() in ["tableau croisée dynamique", "tableau simple"]:
-        if resultats_final["resultats_final"]: 
-            keys = resultats_final["resultats_final"][0].keys()
-            list_champs_front = [
-                {"nom": k, "as_nom": k}
-                for k in keys
-                if k != "id"
-            ]
-            print("\n\n[---] TCD : list_champs_front = ", list_champs_front)
-        else:
-            print("\n\n[---] TCD : list_champ_groupBY = ", list_champ_groupBY)
-            list_champs_front = list_champ_groupBY
- 
-    
-    res_final = {
+
+        if var_llm is True:
+            task_llm = lancer_llm_async.delay(llm_payload)
+            res_llm_id = task_llm.id
+            print(f"\n\n[ --- ] TaskId: {res_llm_id} \n\n")
+
+        # ✅ Extraire les noms de champs à partir du premier élément
+        if affichage_data.strip().lower() in ["tableau croisée dynamique", "tableau simple"]:
+            if resultats_final["resultats_final"]:
+                keys = resultats_final["resultats_final"][0].keys()
+                list_champs_front = [
+                    {"nom": k, "as_nom": k}
+                    for k in keys
+                    if k != "id"
+                ]
+                print("\n\n[---] TCD : list_champs_front = ", list_champs_front)
+            else:
+                print("\n\n[---] TCD : list_champ_groupBY = ", list_champ_groupBY)
+                list_champs_front = list_champ_groupBY
+
+        res_final = {
             "status": "SUCCESS",
             "id": restitution.id,
             "nom": restitution.nom,
@@ -379,11 +410,21 @@ def lancer_traitement_restitution(restitution_id):
             "llmmodele": llmmodele_data,
             "champs": champs_data,
             "liste_champs": list_champs_front,
-            "resultats":  resultats_final["resultats_final"],
+            "resultats": resultats_final["resultats_final"],
             "llm_generative_task_id": res_llm_id,
-            "llm_payload": llm_payload if var_llm is True else None
-        }  
-    return res_final
+            "llm_payload": llm_payload
+        }
+        return res_final
+
+    except Exception as e:
+        print("[TASK] Erreur inattendue :", e)
+        return {
+            "status": "FAILURE",
+            "id": restitution_id,
+            "msgP": "Une erreur inattendue est survenue lors du traitement.",
+            "message": str(e),
+            "requete_sql": requete_sql_ctx,
+        }
 
 
 @app.task
