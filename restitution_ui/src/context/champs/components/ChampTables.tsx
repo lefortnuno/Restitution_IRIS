@@ -14,6 +14,8 @@ interface ChampTablesProps {
   };
   setCurrentAttribut: (currentAttribut: ChampsAVC | null) => void;
   saveTransformation: () => void;
+  editingIndex: number | null;
+  editingAs_nom: string | null;
 }
 
 export const ChampTables: React.FC<ChampTablesProps> = ({
@@ -24,9 +26,31 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
   champ_selectionner,
   setCurrentAttribut,
   saveTransformation,
+  editingIndex,
+  editingAs_nom,
 }) => {
   const inputBaseClasses =
     "w-full rounded border border-gray-300 px-2 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-teal-600 focus:border-teal-600 transition-all duration-300";
+
+  // Remplace à editingIndex si mode édition, sinon append
+  const applyItem = (newItem: ChampsAVC, next?: string) => {
+    const list = champ_selectionner.value || [];
+    const updated =
+      editingIndex !== null
+        ? list.map((item: ChampsAVC, i: number) => (i === editingIndex ? newItem : item))
+        : [...list, newItem];
+    champ_selectionner.onChange(updated);
+    if (next) setStep(next);
+    else saveTransformation();
+  };
+
+  // Bandeau de prévisualisation de l'attribut sélectionné
+  const Preview = ({ nom }: { nom: string | null }) =>
+    nom ? (
+      <div className="mb-2 px-3 py-1.5 bg-teal-50 border border-teal-200 rounded text-xs font-medium text-teal-800 truncate">
+        {nom}
+      </div>
+    ) : null;
 
   if (step === "select") {
     return (
@@ -35,6 +59,7 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
         step={step}
         setCurrentAttribut={setCurrentAttribut}
         setStep={setStep}
+        editingAs_nom={editingAs_nom}
       />
     );
   }
@@ -42,42 +67,38 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
   if (step === "type" && currentAttribut) {
     return (
       <div className="space-y-2 px-2 py-1">
+        <Preview nom={currentAttribut.nom} />
+
         <div
           className="cursor-pointer px-3 py-2 rounded border border-gray-300 bg-white hover:bg-gray-50 transition-all duration-200"
-          onClick={() => {
-            const updated = [
-              ...(champ_selectionner.value || []),
-              {
-                nom: currentAttribut.nom,
-                as_nom: currentAttribut.as_nom,
+          onClick={() =>
+            applyItem({
+              nom: currentAttribut.nom,
+              as_nom: currentAttribut.as_nom,
+              type: "none",
+              typeAttribut: currentAttribut.typeAttribut,
+              taille: null,
+              position: null,
+              parametre: null,
+              separateur: null,
+              transformation: {
                 type: "none",
                 typeAttribut: currentAttribut.typeAttribut,
                 taille: null,
                 position: null,
                 parametre: null,
                 separateur: null,
-                transformation: {
-                  type: "none",
-                  typeAttribut: currentAttribut.typeAttribut,
-                  taille: null,
-                  position: null,
-                  parametre: null,
-                  separateur: null,
-                },
               },
-            ];
-            champ_selectionner.onChange(updated);
-            saveTransformation();
-          }}
+            })
+          }
         >
           Aucune transformation
         </div>
 
         <div
           className="cursor-pointer px-3 py-2 rounded border border-gray-300 bg-white hover:bg-gray-50 transition-all duration-200"
-          onClick={() => {
-            const updated = [
-              ...(champ_selectionner.value || []),
+          onClick={() =>
+            applyItem(
               {
                 nom: currentAttribut.nom,
                 as_nom: currentAttribut.as_nom,
@@ -96,19 +117,17 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
                   separateur: null,
                 },
               },
-            ];
-            champ_selectionner.onChange(updated);
-            setStep("params");
-          }}
+              "params",
+            )
+          }
         >
           Extraire une partie
         </div>
 
         <div
           className="cursor-pointer px-3 py-2 rounded border border-gray-300 bg-white hover:bg-gray-50 transition-all duration-200"
-          onClick={() => {
-            const updated = [
-              ...(champ_selectionner.value || []),
+          onClick={() =>
+            applyItem(
               {
                 nom: currentAttribut.nom,
                 as_nom: currentAttribut.as_nom,
@@ -127,10 +146,9 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
                   separateur: null,
                 },
               },
-            ];
-            champ_selectionner.onChange(updated);
-            setStep("params");
-          }}
+              "params",
+            )
+          }
         >
           Concaténer avec une valeur
         </div>
@@ -140,7 +158,7 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
 
   if (step === "params" && currentAttribut) {
     const current = (champ_selectionner.value || []).find(
-      (i: ChampsAVC) => i.as_nom === currentAttribut.as_nom
+      (i: ChampsAVC) => i.as_nom === currentAttribut.as_nom,
     );
     if (!current) return null;
     const index = (champ_selectionner.value || []).indexOf(current);
@@ -151,13 +169,13 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
           i === index
             ? {
                 ...item,
-                [key]: value, // synchronisation directe Transformation et les variables
+                [key]: value,
                 transformation: {
                   ...(item.transformation || {}),
                   [key]: value,
                 },
               }
-            : item
+            : item,
       );
       champ_selectionner.onChange(updated);
     };
@@ -165,11 +183,13 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
     if (current.transformation?.type === "extract" || current.type === "extract") {
       return (
         <div className="space-y-3 px-2 py-1">
+          <Preview nom={currentAttribut.nom} />
           <div>
             <label className="text-sm font-medium">Taille à extraire</label>
             <input
               type="number"
               placeholder="Ex: 5"
+              defaultValue={current.taille ?? ""}
               className={inputBaseClasses}
               onChange={(e) => handleChange("taille", Number(e.target.value))}
             />
@@ -179,6 +199,7 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
             <input
               type="number"
               placeholder="Ex: 0"
+              defaultValue={current.position ?? ""}
               className={inputBaseClasses}
               onChange={(e) => handleChange("position", Number(e.target.value))}
             />
@@ -198,10 +219,12 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
     if (current.transformation?.type === "concat" || current.type === "concat") {
       return (
         <div className="space-y-3 px-2 py-1">
+          <Preview nom={currentAttribut.nom} />
           <div>
             <label className="text-sm font-medium">Séparateur</label>
             <select
               className={inputBaseClasses}
+              defaultValue={current.separateur ?? ""}
               onChange={(e) => handleChange("separateur", e.target.value)}
             >
               <option value="">Aucun</option>
@@ -216,6 +239,7 @@ export const ChampTables: React.FC<ChampTablesProps> = ({
             <input
               type="text"
               placeholder="Ex: valeur"
+              defaultValue={current.parametre ?? ""}
               className={inputBaseClasses}
               onChange={(e) => handleChange("parametre", e.target.value)}
             />

@@ -21,6 +21,7 @@ export default function LlmmodeleSelector({ name, placeholder, error }: Props) {
   const { control, setValue } = useFormContext();
   const [search, setSearch] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const {
     field: { value = [], onChange },
@@ -38,6 +39,7 @@ export default function LlmmodeleSelector({ name, placeholder, error }: Props) {
     onChange(newValue);
     setValue("llmmodeles", newValue);
     setIsFocused(false);
+    setIsEditing(false);
   };
 
   const filteredOptions = affichageOptions.filter((option) =>
@@ -58,33 +60,42 @@ export default function LlmmodeleSelector({ name, placeholder, error }: Props) {
         </label>
 
         <div className="relative">
-          <div className="flex flex-wrap gap-2 mt-0">
+          <div className="flex flex-wrap gap-2 mt-0 items-center">
             {currentLlmmodele && (
               <div
-                className={`flex items-center p-2 mt-0 text-sm bg-gray-100 border border-gray-300 rounded shadow-sm min-w-0 cursor-pointer`}
+                className={`flex items-center p-2 mt-0 text-sm border rounded shadow-sm min-w-0 transition-colors ${
+                  isEditing
+                    ? "bg-teal-50 border-teal-400"
+                    : "bg-gray-100 border-gray-300"
+                }`}
               >
-                <span className={spanResultForm} title={currentLlmmodele}>
+                <span
+                  className={`${spanResultForm} cursor-pointer hover:text-teal-700`}
+                  title={isEditing ? "Modification en cours…" : "Cliquer pour modifier"}
+                  onClick={() => { setIsEditing(true); setIsFocused(true); }}
+                >
                   {currentLlmmodele}
                 </span>
-
                 <X
                   type="button"
-                  onClick={() => setValue(name, [])}
+                  onClick={() => { setValue(name, []); setIsEditing(false); }}
                   className={xForm}
-                  aria-label="Supprimer affichage"
+                  aria-label="Supprimer modèle"
                 />
               </div>
             )}
-            {!currentLlmmodele && (
+            {/* {(!currentLlmmodele || isEditing) && ( */}
+            {(!currentLlmmodele ) && (
               <input
                 id={name}
                 name={`${name}_search`}
                 type="text"
-                placeholder={placeholder}
+                placeholder={isEditing ? "Rechercher un modèle…" : placeholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 onFocus={() => setIsFocused(true)}
-                onBlur={() => requestAnimationFrame(() => setIsFocused(false))}
+                onBlur={() => requestAnimationFrame(() => { setIsFocused(false); setIsEditing(false); setSearch(""); })}
+                autoFocus={isEditing}
                 className={`max-w-[100%] ${inputSearcForm} truncate`}
                 autoComplete="off"
               />

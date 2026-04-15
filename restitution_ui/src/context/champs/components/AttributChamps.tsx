@@ -9,6 +9,7 @@ interface AttributProcessProps {
   step: string;
   setStep: (step: string) => void;
   setCurrentAttribut: (currentAttribut: ChampsAVC | null) => void;
+  editingAs_nom?: string | null;
 }
 
 export const AttributChamps: React.FC<AttributProcessProps> = ({
@@ -16,6 +17,7 @@ export const AttributChamps: React.FC<AttributProcessProps> = ({
   step,
   setStep,
   setCurrentAttribut,
+  editingAs_nom,
 }) => {
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const { getValues, setValue } = useFormContext();
@@ -25,7 +27,8 @@ export const AttributChamps: React.FC<AttributProcessProps> = ({
 
   const handleClick = (attribut: string, type: string) => {
     const currentOps = getValues("champs") || [];
-    const as__nom = currentOps.length + "-" + attribut;
+    // En mode édition on conserve l'as_nom original, sinon on en génère un nouveau
+    const as__nom = editingAs_nom ?? (currentOps.length + "-" + attribut);
 
     const new_champ = {
       nom: attribut,

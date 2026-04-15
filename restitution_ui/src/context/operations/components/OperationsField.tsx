@@ -39,6 +39,7 @@ export default function OperationsField({
   currentOperation,
   setCurrentOperation,
   setCurrOpComplet,
+  setContinuity,
   onDeleteComponent,
   error,
 }: OpFieldProps) {
@@ -46,6 +47,8 @@ export default function OperationsField({
   const [step, setStep] = useState<string>("operation");
   const [extraStep, setExtraStep] = useState<string>("");
   const [ultimeStep, setUltimeStep] = useState<string>("");
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editingOriginalCount, setEditingOriginalCount] = useState<number>(0);
   const { getValues, setValue } = useFormContext();
 
   const [suprattr, setSuprattr] = useState<number>(0);
@@ -69,7 +72,7 @@ export default function OperationsField({
     }
   }, [open]);
 
-  const resetOperation = () => {
+  const resetWizardStates = () => {
     setStep("operation");
     setExtraStep("");
     setSuprattr(0);
@@ -82,8 +85,55 @@ export default function OperationsField({
     setSuprcond1SaveChamp(0);
     setSuprcond2SaveChamp(0);
     setUltimeStep("");
+  };
+
+  const resetOperation = () => {
+    if (isEditing) {
+      const currentValue = getValues(name) || [];
+      // Si le wizard a ajouté une nouvelle op (longueur > count original)
+      if (currentValue.length > editingOriginalCount) {
+        const newOp = currentValue[currentValue.length - 1]; // nouvelle op en fin
+        const oldOp = currentValue[numIndex];               // ancienne op à son index
+        const withoutNewOp = currentValue.slice(0, -1);    // retire la nouvelle
+        const withoutBoth = withoutNewOp.filter((_: OperationType, i: number) => i !== numIndex); // retire l'ancienne
+        const reordered = [
+          ...withoutBoth.slice(0, numIndex),
+          newOp,
+          ...withoutBoth.slice(numIndex),
+        ];
+        setValue(name, reordered);
+
+        // Retire l'ancien champ op_ (le nouveau a déjà été ajouté par le wizard)
+        if (oldOp) {
+          const mes_champs = getValues("champs") || [];
+          const filteredChamps = mes_champs.filter(
+            (c: any) =>
+              !(
+                c.nom === oldOp.as_nom &&
+                (c.type === "op_" || c.transformation?.type === "op_")
+              ),
+          );
+          setValue("champs", filteredChamps);
+        }
+      }
+      setIsEditing(false);
+      setEditingOriginalCount(0);
+    }
+    resetWizardStates();
     setOpen(false);
     setCurrOpComplet(true);
+  };
+
+  const handleEditOperation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Garde l'op dans le tableau (reste visible pendant l'édition)
+    const originalCount = (operation_selectionner.value || []).length;
+    setEditingOriginalCount(originalCount);
+    resetWizardStates();
+    setIsEditing(true);
+    setCurrOpComplet(false);
+    setContinuity(true);
+    setOpen(true);
   };
 
   const conditionLabels: Record<string, string> = {
@@ -212,6 +262,18 @@ export default function OperationsField({
               onClose?.();
               setOpen(false);
             } else {
+              // Fermeture en cours d'édition sans valider → annulation propre
+              if (!isOpen && isEditing) {
+                const currentValue = getValues(name) || [];
+                if (currentValue.length > editingOriginalCount) {
+                  // Retire les ops partielles ajoutées par le wizard
+                  setValue(name, currentValue.slice(0, editingOriginalCount));
+                }
+                setIsEditing(false);
+                setEditingOriginalCount(0);
+                resetWizardStates();
+                setCurrOpComplet(true);
+              }
               setOpen(isOpen);
             }
           }}
@@ -226,9 +288,11 @@ export default function OperationsField({
               }`}
             >
               {operation_selectionner.value?.[numIndex] ? (
-                <div className={divResult2Form}>
+                <div className={`${divResult2Form} ${isEditing ? "border-teal-400 bg-teal-50" : ""}`}>
                   <span
-                    className={`mr-1 text-gray-800 w-full truncate cursor-pointer overflow-hidden`}
+                    className={`mr-1 w-full truncate cursor-pointer overflow-hidden hover:text-teal-700 ${isEditing ? "text-teal-700 opacity-60 italic" : "text-gray-800"}`}
+                    onClick={(e) => handleEditOperation(e)}
+                    title={isEditing ? "Modification en cours…" : "Cliquer pour modifier"}
                   >
                     {renderTransformationSummary(
                       operation_selectionner.value[numIndex]

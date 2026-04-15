@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import React from "react";
 import { Label } from "@/components/ui/label";
 import {
   Popover,
@@ -37,9 +38,8 @@ const ChampsSelector = ({
   const [open, setOpen] = useState(false);
   const [selectedCat, setSelectedCat] = useState<string | null>(null);
   const [step, setStep] = useState<string>("select");
-  const [currentAttribut, setCurrentAttribut] = useState<ChampsAVC | null>(
-    null,
-  );
+  const [currentAttribut, setCurrentAttribut] = useState<ChampsAVC | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   const triggerRef = useRef<HTMLDivElement>(null);
   const [triggerWidth, setTriggerWidth] = useState<number>(0);
@@ -68,7 +68,17 @@ const ChampsSelector = ({
     setStep("select");
     setSelectedCat(null);
     setCurrentAttribut(null);
+    setEditingIndex(null);
     setOpen(false);
+  };
+
+  const handleChipEdit = (e: React.MouseEvent, item: ChampsAVC, idx: number) => {
+    e.stopPropagation();
+    if (item.type === "op_" || item.transformation?.type === "op_") return;
+    setEditingIndex(idx);
+    setCurrentAttribut(item);
+    setStep("select");
+    setOpen(true);
   };
 
   const renderTransformationSummary = (item: any) => {
@@ -117,43 +127,54 @@ const ChampsSelector = ({
               className={span2Form}
             >
               {champ_selectionner.value?.length > 0 ? (
-                champ_selectionner.value.map((item: ChampsAVC, idx: number) => (
-                  <div
-                    key={`${item.nom}-${idx}`}
-                    className={`flex items-center p-2 mt-0 text-sm bg-gray-100 border border-gray-300 rounded shadow-sm min-w-0`}
-                  >
-                    <span className={spanResultForm}>
-                      {renderTransformationSummary(item)}
-                    </span>
-
-                    <X
-                      className={`${xForm} ${
-                        operation_selected.some(
-                          (op: any) => op.as_nom === item.as_nom,
-                        )
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
+                champ_selectionner.value.map((item: ChampsAVC, idx: number) => {
+                  const isOp = item.type === "op_" || item.transformation?.type === "op_";
+                  return (
+                    <div
+                      key={`${item.nom}-${idx}`}
+                      title={isOp ? "Renommer via le champ « Nom opération » au-dessus de l'opération" : "Cliquer pour modifier"}
+                      className={`flex items-center p-2 mt-0 text-sm border rounded shadow-sm min-w-0 transition-colors ${
+                        isOp
+                          ? "bg-gray-50 border-gray-200 cursor-default"
+                          : editingIndex === idx
+                          ? "bg-teal-50 border-teal-400 cursor-pointer"
+                          : "bg-gray-100 border-gray-300 hover:bg-teal-50 hover:border-teal-300 cursor-pointer"
                       }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onClick={(e) => handleChipEdit(e, item, idx)}
+                    >
+                      <span className={spanResultForm}>
+                        {renderTransformationSummary(item)}
+                      </span>
 
-                        if (
+                      <X
+                        className={`${xForm} ${
                           operation_selected.some(
                             (op: any) => op.as_nom === item.as_nom,
                           )
-                        ) {
-                          return;
-                        }
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
 
-                        const updated = champ_selectionner.value.filter(
-                          (_: ChampsAVC, i: number) => i !== idx,
-                        );
-                        champ_selectionner.onChange(updated);
-                        saveTransformation();
-                      }}
-                    />
-                  </div>
-                ))
+                          if (
+                            operation_selected.some(
+                              (op: any) => op.as_nom === item.as_nom,
+                            )
+                          ) {
+                            return;
+                          }
+
+                          const updated = champ_selectionner.value.filter(
+                            (_: ChampsAVC, i: number) => i !== idx,
+                          );
+                          champ_selectionner.onChange(updated);
+                          saveTransformation();
+                        }}
+                      />
+                    </div>
+                  );
+                })
               ) : (
                 <span className={placeholder2Form}>
                   Sélectionnez un attribut
@@ -181,6 +202,8 @@ const ChampsSelector = ({
                 setCurrentAttribut={setCurrentAttribut}
                 champ_selectionner={champ_selectionner}
                 saveTransformation={saveTransformation}
+                editingIndex={editingIndex}
+                editingAs_nom={editingIndex !== null ? currentAttribut?.as_nom ?? null : null}
               />
             )}
 
