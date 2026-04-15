@@ -1,7 +1,5 @@
 node {
 
-    def SERVER = "ubuntu@${SERVER_IP}"
-
     stage('Clone') {   
         checkout scm 
         bat 'dir' 
@@ -83,7 +81,12 @@ node {
     }
 
     stage('Prepare EC2') {
-        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {
+        withCredentials([
+        file(credentialsId: 'ec2-pem', variable: 'PEM_FILE'),
+        string(credentialsId: 'server-ip', variable: 'SERVER_IP')
+    ]) {
+
+            def SERVER = "ubuntu@${SERVER_IP}"
 
             bat """
             ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} mkdir -p /home/ubuntu/aws_restitution
@@ -141,7 +144,13 @@ node {
     stage('Init Prod') {
         sleep 80
 
-        withCredentials([file(credentialsId: 'ec2-pem', variable: 'PEM_FILE')]) {  
+        withCredentials([
+        file(credentialsId: 'ec2-pem', variable: 'PEM_FILE'),
+        string(credentialsId: 'server-ip', variable: 'SERVER_IP')
+    ]) {
+
+            def SERVER = "ubuntu@${SERVER_IP}"
+
             bat """
             ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
             """
