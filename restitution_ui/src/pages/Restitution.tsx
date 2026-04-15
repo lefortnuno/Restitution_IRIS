@@ -148,7 +148,7 @@ export default function Restitution() {
           <div className="py-2">
             <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 md:px-8">
               <h1 className="text-2xl font-semibold text-gray-900 my-3">
-                Restitution des données
+                Restitution des données IP DU SERVEUR
               </h1>
             </div>
             <ErrorBoundary fallback={<div>Erreur dans le tableau.</div>}>
