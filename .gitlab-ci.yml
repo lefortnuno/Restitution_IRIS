@@ -13,10 +13,10 @@ deploy_production:
     - ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@13.63.199.34 "
       cd /home/ubuntu/aws_restitution &&
       docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD &&
+      docker compose down -v &&
       docker pull registry.gitlab.com/lefortnuno/restitution_iris/backend:latest &&
       docker pull registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest &&
       docker pull registry.gitlab.com/lefortnuno/restitution_iris/nginx:latest &&
-      docker compose down -v &&
       docker compose up -d
       "
   only:
