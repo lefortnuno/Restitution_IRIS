@@ -8,9 +8,11 @@ import {
   checkTaskStatus,
   checkTableTaskStatus,
 } from "@/components/queries/useVisualisation";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Edit, Copy } from "lucide-react";
+import { useAllRestitutionIds } from "@/components/queries/useAllRestitutionIds";
 
 import TableSimple from "@/components/table_simple/TableSimple";
 import PieChartComponent from "@/components/graphs/PieChartComponent";
@@ -39,6 +41,18 @@ export default function Visualisation() {
   const { restitutionId } = useParams();
   const [searchParams] = useSearchParams();
   const nomAffichage = searchParams.get("affichage");
+  const navigate = useNavigate();
+
+  const { data: allIds } = useAllRestitutionIds();
+  const currentIndex =
+    allIds?.findIndex((r) => r.id === Number(restitutionId)) ?? -1;
+  const prevItem = currentIndex > 0 ? allIds![currentIndex - 1] : null;
+  const nextItem =
+    currentIndex >= 0 && currentIndex < (allIds?.length ?? 0) - 1
+      ? allIds![currentIndex + 1]
+      : null;
+  console.log("[VISUALISATION] nextItem=", nextItem);
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const [restitutionTaskID, setRestitutionTaskID] = useState("");
@@ -111,10 +125,16 @@ export default function Visualisation() {
   });
 
   useEffect(() => {
-    if (!result && !error) {
-      launch.mutate();
-    }
-  }, []);
+    setResult(null);
+    setData([]);
+    setCount(0);
+    setTotalPages(0);
+    setLoading(true);
+    setError("");
+    setRestitutionTaskID("");
+    launch.mutate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restitutionId]);
 
   useEffect(() => {
     if (!result && !restitutionTaskID) return;
@@ -217,7 +237,7 @@ export default function Visualisation() {
           <PieChartComponent titre={result.nom} sourceData={result.resultats}>
             {ia}
           </PieChartComponent>
-        ); 
+        );
 
       case "Graphique linéaire":
         return (
@@ -298,30 +318,90 @@ export default function Visualisation() {
                 </pre> */}
 
                 <br />
-                {result?.llm_generative_task_id !== undefined &&
-                  result?.llm_generative_task_id !== 0 &&
-                  (result?.affichage === "Tableau croisée dynamique" ||
-                    result?.affichage === "Tableau simple") && (
-                    <IAAnalysisResult
-                      llmTaskId={result.llm_generative_task_id}
-                      llmmodele={result.llmmodele}
-                      restitutionId={Number(restitutionId)}
-                      restitutionTaskId={restitutionTaskID}
-                      exportMode
-                    />
-                  )}
+                <div className="px-4 sm:px-6 lg:px-8">
+                  {result?.llm_generative_task_id !== undefined &&
+                    result?.llm_generative_task_id !== 0 &&
+                    (result?.affichage === "Tableau croisée dynamique" ||
+                      result?.affichage === "Tableau simple") && (
+                      <IAAnalysisResult
+                        llmTaskId={result.llm_generative_task_id}
+                        llmmodele={result.llmmodele}
+                        restitutionId={Number(restitutionId)}
+                        restitutionTaskId={restitutionTaskID}
+                        exportMode
+                      />
+                    )}
 
-                {result?.llm_generative_task_id === 0 && (
-                  <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200 space-y-4">
-                    <div className="bg-red-100 p-6">
-                      <p className="text-sm text-gray-500 italic">
-                        Modèle analyse IA désactivé
-                      </p>
+                  {result?.llm_generative_task_id === 0 && (
+                    <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-200 space-y-6">
+                      <div className="bg-red-100 p-6">
+                        <p className="text-sm text-gray-500 italic">
+                          Modèle analyse IA désactivé
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </>
             )}
+          </div>
+
+          {/* Barre d'actions : navigation + Modifier / Dupliquer */}
+          <div className="bg-white border-b border-gray-100 mb-4">
+            <div className="px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() =>
+                    prevItem &&
+                    navigate(
+                      `/visualisation/${prevItem.id}?affichage=${prevItem.affichage ?? ""}`,
+                    )
+                  }
+                  disabled={!prevItem}
+                  title={prevItem?.nom}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={14} />
+                  Précédent
+                </button>
+                <button
+                  onClick={() =>
+                    nextItem &&
+                    navigate(
+                      `/visualisation/${nextItem.id}?affichage=${nextItem.affichage ?? ""}`,
+                    )
+                  }
+                  disabled={!nextItem}
+                  title={nextItem?.nom}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  Suivant
+                  <ChevronRight size={14} />
+                </button>
+                {allIds && currentIndex >= 0 && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    {currentIndex + 1} / {allIds.length}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate(`/modification/${restitutionId}`)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  <Edit size={14} />
+                  Modifier
+                </button>
+                <button
+                  onClick={() => navigate(`/duplication/${restitutionId}`)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-teal-600 rounded-md hover:bg-teal-700 transition-colors"
+                >
+                  <Copy size={14} />
+                  Dupliquer
+                </button>
+              </div>
+            </div>
           </div>
         </main>
       </div>

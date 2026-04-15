@@ -1,6 +1,6 @@
 node {
 
-    def SERVER = "ubuntu@13.53.37.13"
+    def SERVER = "ubuntu@13.63.199.34"
 
     stage('Clone') {   
         checkout scm 
@@ -12,9 +12,9 @@ node {
 
             bat 'type restitution_ui\\.env' 
             bat 'docker compose down -v' 
-            bat 'docker compose build --no-cache' 
-            bat 'docker compose up -d' 
-            // bat 'docker compose up -d --build' 
+            // bat 'docker compose build --no-cache' 
+            // bat 'docker compose up -d' 
+            bat 'docker compose up -d --build' 
         }     
         sleep 40
     }

@@ -136,13 +136,13 @@ export default function PieChartComponent({
 
       {/* On capture uniquement ce bloc (toute cette bloc)*/}
       <div ref={exportRef}>
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 md:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between my-3">
             <h1 className="text-2xl font-semibold text-gray-900">{titre}</h1>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center gap-6 px-4 sm:px-6 md:px-8 pb-6">
+        <div className="flex flex-col md:flex-row items-center gap-6 px-4 sm:px-6 lg:px-8 pb-6">
           {/* Graphique */}
           <div className="flex-1 h-[500px]">
             <div className="rounded-lg p-6 h-full flex items-center justify-center">

@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import React from "react";
 import { CleLogique, OperationType } from "@/context/operations/operationType";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
@@ -40,12 +39,9 @@ export const ConditionProcess: React.FC<ConditionProcessProps> = ({
     name: "operation_selected",
   });
 
-  const [isCondOpen, setIsCondOpen] = useState(false);
-
   const options = hasExistingCondition ? ["sinon si", "sinon"] : ["si"];
 
-  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const type = event.target.value as CleLogique;
+  const handleSelect = (type: CleLogique) => {
     if (!type) return;
 
     if (type === "si" || type === "sinon si") {
@@ -106,32 +102,23 @@ export const ConditionProcess: React.FC<ConditionProcessProps> = ({
     }
 
     setStep("attr");
-    setIsCondOpen(false);
   };
 
   return (
-    <div
-      onClick={(e) => {
-        e.stopPropagation();
-        setIsCondOpen(!isCondOpen);
-      }}
-      className="relative w-full"
-    >
-      <select
-        onChange={handleChange}
-        onBlur={() => setIsCondOpen(false)}
-        defaultValue=""
-        className="w-full h-10 px-3 text-sm text-gray-800 font-medium border border-gray-300 rounded-md bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition"
-      >
-        <option value="" disabled>
-          Conditions
-        </option>
-        {options.map((op) => (
-          <option key={op} value={op} className="cursor-pointer">
-            {op.toUpperCase()}
-          </option>
-        ))}
-      </select>
+    <div className="space-y-1">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1 mb-1">
+        Conditions
+      </p>
+      {options.map((op) => (
+        <button
+          key={op}
+          type="button"
+          onClick={() => handleSelect(op as CleLogique)}
+          className="w-full text-left px-3 py-2 text-sm font-medium text-gray-800 rounded-md border border-gray-200 bg-white hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 cursor-pointer transition-colors"
+        >
+          {op.toUpperCase()}
+        </button>
+      ))}
     </div>
   );
 };

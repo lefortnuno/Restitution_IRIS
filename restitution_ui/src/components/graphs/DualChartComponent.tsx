@@ -247,7 +247,7 @@ const DualChartComponent: React.FC<DualChartProps> = ({
       </div>
 
       <div
-        className="max-w-screen-2xl mx-auto px-4 sm:px-6 md:px-8"
+        className="px-4 sm:px-6 lg:px-8"
         ref={exportRef}
       >
         <div className="flex items-center justify-between my-3">

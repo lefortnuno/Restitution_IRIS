@@ -61,7 +61,7 @@ export default function ColumnVisibilityMenu({ table }: ColumnVisibilityMenuProp
                       checked={column.getIsVisible()}
                       onChange={column.getToggleVisibilityHandler()}
                       disabled={isLastVisible}
-                      className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                      className="h-4 w-4 rounded border-gray-300 accent-blue-600 focus:ring-blue-500"
                     />
                     <span className={`select-none text-gray-800 text-sm ${isLastVisible ? "opacity-50" : ""}`}>
                       {typeof column.columnDef.header === "string"

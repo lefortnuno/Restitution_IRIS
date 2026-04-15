@@ -195,7 +195,7 @@ const HistogrammeComponent: React.FC<HistogrammeComponentProps> = ({
       <div className="w-full h-px mb-4 bg-gray-300/40 backdrop-blur-sm shadow-sm"></div>
 
       <div
-        className="max-w-screen-2xl mx-auto px-4 sm:px-6 md:px-8"
+        className="px-4 sm:px-6 lg:px-8"
         ref={exportRef}
       >
         <div className="flex items-center justify-between my-3">

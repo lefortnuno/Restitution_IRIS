@@ -37,7 +37,7 @@ function IndeterminateCheckbox({
       checked={checked}
       onChange={onChange}
       disabled={disabled}
-      className="w-4 h-4 cursor-pointer"
+      className="w-4 h-4 cursor-pointer accent-blue-600"
     />
   );
 }

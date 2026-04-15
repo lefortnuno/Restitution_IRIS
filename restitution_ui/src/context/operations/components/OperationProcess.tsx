@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import {
   OperationType,
@@ -61,12 +61,8 @@ export const OperationProcess: React.FC<OperationProcessProps> = ({
     name: "operation_selected",
   });
 
-  const [operationSelectionner, setOperationSelectionner] =
-    useState<string>("");
-
   const handleClick = (operationSelectionner: string) => {
     if (!operationSelectionner) return;
-    setOperationSelectionner(operationSelectionner);
 
     if (step === "operation") {
       const count: number = suprattr + 2;
@@ -217,40 +213,31 @@ export const OperationProcess: React.FC<OperationProcessProps> = ({
     } 
 
     setStep("attr");
-
-    setOpen(false);
-    setOperationSelectionner("");
   };
 
+  const options =
+    extraStep.startsWith("supr_cond1_attr_") ||
+    extraStep.startsWith("supr_cond2_attr_")
+      ? operationsConditions
+      : operationsOptions;
+
   return (
-    <div className="space-y-2">
-      <select
-        value={operationSelectionner}
-        onChange={(e) => handleClick(e.target.value)}
-        className="w-full h-10 px-3 text-sm text-gray-800 font-medium border border-gray-300 rounded-md bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition"
-      >
-        <option value="" disabled>
-          Choisir une opération
-        </option>
-        {extraStep.startsWith("supr_cond1_attr_") ||
-        extraStep.startsWith("supr_cond2_attr_") ? (
-          <>
-            {operationsConditions.map((op) => (
-              <option key={op.value} value={op.value}>
-                {op.label}
-              </option>
-            ))}
-          </>
-        ) : (
-          <>
-            {operationsOptions.map((op) => (
-              <option key={op.value} value={op.value}>
-                {op.label}
-              </option>
-            ))}
-          </>
-        )}
-      </select>
+    <div>
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1 mb-2">
+        Opérations
+      </p>
+      <div className="grid grid-cols-3 gap-1.5">
+        {options.map((op) => (
+          <button
+            key={op.value}
+            type="button"
+            onClick={() => handleClick(op.value)}
+            className="text-center px-2 py-2.5 text-xs font-medium text-gray-800 rounded-md border border-gray-200 bg-white hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 cursor-pointer transition-colors leading-tight"
+          >
+            {op.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

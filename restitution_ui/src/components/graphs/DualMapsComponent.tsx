@@ -162,7 +162,7 @@ export default function DualMapsComponent({
 
       <div
         ref={exportRef}
-        className="max-w-screen-2xl mx-auto px-4 sm:px-6 md:px-8"
+        className="px-4 sm:px-6 lg:px-8"
       >
         <div className="flex items-center justify-between my-3">
           <h1 className="text-2xl font-semibold text-gray-900">{titre}</h1>
