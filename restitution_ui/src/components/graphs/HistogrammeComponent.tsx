@@ -93,7 +93,8 @@ const HistogrammeComponent: React.FC<HistogrammeComponentProps> = ({
   }, [backendData, colorIndex, hiddenXLabels]);
 
   const histoChartOptions = {
-    responsive: false,
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       title: {
         display: false,
@@ -201,13 +202,13 @@ const HistogrammeComponent: React.FC<HistogrammeComponentProps> = ({
         <div className="flex items-center justify-between my-3">
           <h1 className="text-2xl font-semibold text-gray-900">{titre}</h1>
         </div>
-        <Bar
-          ref={chartRef}
-          data={chartData}
-          options={histoChartOptions}
-          width={1200}
-          height={500}
-        />
+        <div style={{ position: "relative", width: "100%", height: "500px" }}>
+          <Bar
+            ref={chartRef}
+            data={chartData}
+            options={histoChartOptions}
+          />
+        </div>
         
         <br />
         {children}

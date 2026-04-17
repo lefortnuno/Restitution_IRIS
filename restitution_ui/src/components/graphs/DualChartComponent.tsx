@@ -113,7 +113,8 @@ const DualChartComponent: React.FC<DualChartProps> = ({
   }, [backendData, colorIndex, hiddenDatasets]);
 
   const histoChartOptions = {
-    responsive: false,
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       title: {
         display: false,
@@ -166,7 +167,8 @@ const DualChartComponent: React.FC<DualChartProps> = ({
   };
 
   const lineChartOptions = {
-    responsive: false,
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       title: { display: false },
       datalabels: { display: false },
@@ -253,23 +255,21 @@ const DualChartComponent: React.FC<DualChartProps> = ({
         <div className="flex items-center justify-between my-3">
           <h1 className="text-2xl font-semibold text-gray-900">{titre}</h1>
         </div>
-        {isTheDual ? (
-          <Bar
-            ref={barChartRef}
-            data={chartData}
-            options={histoChartOptions}
-            width={1200}
-            height={500}
-          />
-        ) : (
-          <Line
-            ref={lineChartRef}
-            data={chartData}
-            options={lineChartOptions}
-            width={1200}
-            height={500}
-          />
-        )}
+        <div style={{ position: "relative", width: "100%", height: "500px" }}>
+          {isTheDual ? (
+            <Bar
+              ref={barChartRef}
+              data={chartData}
+              options={histoChartOptions}
+            />
+          ) : (
+            <Line
+              ref={lineChartRef}
+              data={chartData}
+              options={lineChartOptions}
+            />
+          )}
+        </div>
 
         <br />
         {children}

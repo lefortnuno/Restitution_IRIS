@@ -80,91 +80,91 @@ node {
                     """
     }
 
-    // stage('Prepare EC2') {
-    //     withCredentials([
-    //     file(credentialsId: 'ec2-pem', variable: 'PEM_FILE'),
-    //     string(credentialsId: 'server-ip', variable: 'SERVER_IP')
-    // ]) {
+    stage('Prepare EC2') {
+        withCredentials([
+        file(credentialsId: 'ec2-pem', variable: 'PEM_FILE'),
+        string(credentialsId: 'server-ip', variable: 'SERVER_IP')
+    ]) {
 
-    //         def SERVER = "ubuntu@${SERVER_IP}"
+            def SERVER = "ubuntu@${SERVER_IP}"
 
-    //         bat """
-    //         ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} mkdir -p /home/ubuntu/aws_restitution
-    //         """
+            bat """
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} mkdir -p /home/ubuntu/aws_restitution
+            """
 
-    //         bat """
-    //         scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
-    //         """ 
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no aws_restt\\docker-compose.yml ${SERVER}:/home/ubuntu/aws_restitution/docker-compose.yml
+            """ 
 
-    //         bat """
-    //         scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/home/ubuntu/aws_restitution/nginx/conf/nginx.conf 
-    //         """ 
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/home/ubuntu/aws_restitution/nginx/conf/nginx.conf 
+            """ 
             
-    //         // bat """
-    //         // sudo scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/etc/nginx/conf/nginx.conf 
-    //         // """ 
+            // bat """
+            // sudo scp -i %PEM_FILE% -o StrictHostKeyChecking=no nginx\\conf\\nginx.conf ${SERVER}:/etc/nginx/conf/nginx.conf 
+            // """ 
 
-    //         bat """
-    //         scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
-    //         """
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.sql ${SERVER}:/home/ubuntu/aws_restitution/restt.sql
+            """
 
-    //         bat """
-    //         scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.json ${SERVER}:/home/ubuntu/aws_restitution/restt.json
-    //         """
-    //     }
-    // } 
+            bat """
+            scp -i %PEM_FILE% -o StrictHostKeyChecking=no restt.json ${SERVER}:/home/ubuntu/aws_restitution/restt.json
+            """
+        }
+    } 
 
-    // stage('Push Images') {
-    //     withCredentials([usernamePassword(
-    //         credentialsId: 'gitlab-registry2',
-    //         usernameVariable: 'REG_USER',
-    //         passwordVariable: 'REG_PASS'
-    //     )]) {
+    stage('Push Images') {
+        withCredentials([usernamePassword(
+            credentialsId: 'gitlab-registry2',
+            usernameVariable: 'REG_USER',
+            passwordVariable: 'REG_PASS'
+        )]) {
 
-    //         bat "docker login registry.gitlab.com -u %REG_USER% -p %REG_PASS%"
+            bat "docker login registry.gitlab.com -u %REG_USER% -p %REG_PASS%"
                         
-    //         bat "docker tag restt-backendd registry.gitlab.com/lefortnuno/restitution_iris/backend:latest || exit /b 1"
-    //         bat "docker tag restt-frontendd registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest || exit /b 1" 
-    //         bat "docker tag restt-nginx registry.gitlab.com/lefortnuno/restitution_iris/nginx:latest || exit /b 1"
+            bat "docker tag restt-backendd registry.gitlab.com/lefortnuno/restitution_iris/backend:latest || exit /b 1"
+            bat "docker tag restt-frontendd registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest || exit /b 1" 
+            bat "docker tag restt-nginx registry.gitlab.com/lefortnuno/restitution_iris/nginx:latest || exit /b 1"
 
-    //         bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/backend:latest || exit /b 1"
-    //         bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest || exit /b 1"
-    //         bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/nginx:latest || exit /b 1"
-    //     }
-    // }
+            bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/backend:latest || exit /b 1"
+            bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/frontend:latest || exit /b 1"
+            bat "docker push registry.gitlab.com/lefortnuno/restitution_iris/nginx:latest || exit /b 1"
+        }
+    }
  
-    // stage('Trigger GitLab Deploy') {
-    //     withCredentials([string(credentialsId: 'gitlab-trigger-token', variable: 'TRIGGER_TOKEN')]) {
-    //         bat """
-    //         curl -X POST -F "token=%TRIGGER_TOKEN%" -F "ref=main" https://gitlab.com/api/v4/projects/79733394/trigger/pipeline || exit /b 1
-    //         """
-    //     }
-    // }
+    stage('Trigger GitLab Deploy') {
+        withCredentials([string(credentialsId: 'gitlab-trigger-token', variable: 'TRIGGER_TOKEN')]) {
+            bat """
+            curl -X POST -F "token=%TRIGGER_TOKEN%" -F "ref=main" https://gitlab.com/api/v4/projects/79733394/trigger/pipeline || exit /b 1
+            """
+        }
+    }
 
-    // stage('Init Prod') {
-    //     sleep 80
+    stage('Init Prod') {
+        sleep 80
 
-    //     withCredentials([
-    //     file(credentialsId: 'ec2-pem', variable: 'PEM_FILE'),
-    //     string(credentialsId: 'server-ip', variable: 'SERVER_IP')
-    // ]) {
+        withCredentials([
+        file(credentialsId: 'ec2-pem', variable: 'PEM_FILE'),
+        string(credentialsId: 'server-ip', variable: 'SERVER_IP')
+    ]) {
 
-    //         def SERVER = "ubuntu@${SERVER_IP}"
+            def SERVER = "ubuntu@${SERVER_IP}"
 
-    //         bat """
-    //         ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
-    //         """
+            bat """
+            ssh -i %PEM_FILE% ${SERVER} "cd /home/ubuntu/aws_restitution && docker cp /home/ubuntu/aws_restitution/restt.sql restt-postgres:/restt.sql && docker exec -i restt-postgres psql -U postgres -d iris_restitution -f /restt.sql"
+            """
             
-    //         sleep 2 
-    //         bat """
-    //         ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker exec restt-backend python manage.py shell -c \\"from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save(); print('Superuser created or updated')\\""
-    //         """
+            sleep 2 
+            bat """
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "docker exec restt-backend python manage.py shell -c \\"from django.contrib.auth import get_user_model; User = get_user_model(); user, created = User.objects.get_or_create(username='trofel', email='trofel.2025@gmail.com'); user.set_password('Trofel.@#'); user.is_superuser=True; user.is_staff=True; user.save(); print('Superuser created or updated')\\""
+            """
 
-    //         sleep 2 
-    //         bat """
-    //         ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "cd /home/ubuntu/aws_restitution && ./init_prod.sh"
-    //         """ 
-    //     }
-    // }  
+            sleep 2 
+            bat """
+            ssh -i %PEM_FILE% -o StrictHostKeyChecking=no ${SERVER} "cd /home/ubuntu/aws_restitution && ./init_prod.sh"
+            """ 
+        }
+    }  
 
 }
