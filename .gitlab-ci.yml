@@ -13,7 +13,9 @@ deploy_production:
     - ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$SERVER_IP "
       cd /home/ubuntu/aws_restitution &&
       docker compose down -v &&
+      sleep 5 &&
       docker image prune -a -f &&
+      sleep 5 &&
       docker system df &&
       docker login registry.gitlab.com -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD &&
       docker pull registry.gitlab.com/lefortnuno/restitution_iris/backend:latest &&
